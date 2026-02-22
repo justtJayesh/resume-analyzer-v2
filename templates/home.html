@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Home - CVNest{% endblock %}
+
+{% block content %}
+<div class="home-content">
+    <h1>Upload Your Resume</h1>
+    <p class="intro">Upload a PDF, DOCX, or TXT file to get a score and improvement tips.</p>
+
+    <form method="POST" action="{{ url_for('home') }}" enctype="multipart/form-data" class="upload-form">
+        <div class="file-input-wrapper">
+            <input type="file" id="resume" name="resume" accept=".pdf,.docx,.txt" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Analyze Resume</button>
+    </form>
+
+    {% if last_score is defined and last_score is not none %}
+    <div class="results-card">
+        <h2>Latest Analysis: {{ last_filename }}</h2>
+        <div class="score-display">
+            <span class="score-value">{{ last_score }}</span>
+            <span class="score-label">/ 100</span>
+        </div>
+        {% if last_tips %}
+        <h3>Improvement Tips</h3>
+        <ul class="tips-list">
+            {% for tip in last_tips %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if analyses and analyses|length > 0 %}
+    <div class="history-section">
+        <h2>Recent Analyses</h2>
+        <ul class="history-list">
+            {% for a in analyses %}
+            <li class="history-item">
+                <span class="history-filename">{{ a.filename }}</span>
+                <span class="history-score">Score: {{ a.score }}/100</span>
+                <span class="history-date">{{ a.uploaded_at[:10] if a.uploaded_at else '' }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
