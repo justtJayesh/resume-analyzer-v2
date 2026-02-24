@@ -1,5 +1,3 @@
-"""CVNest - Flask web application."""
-
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -43,19 +41,19 @@ def login():
     if request.method == "GET":
         if "user_id" in session:
             return redirect(url_for("home"))
-        return render_template("login.html")
+        return render_template("auth.html", active_tab="login")
 
     username = request.form.get("username", "").strip()
     password = request.form.get("password", "")
 
     if not username or not password:
         flash("Please enter both username and password.", "error")
-        return render_template("login.html")
+        return render_template("auth.html", active_tab="login")
 
     user = database.get_user_by_username(username)
     if not user or not check_password_hash(user["password_hash"], password):
         flash("Invalid username or password.", "error")
-        return render_template("login.html")
+        return render_template("auth.html", active_tab="login")
 
     session["user_id"] = user["id"]
     session["username"] = user["username"]
@@ -69,7 +67,7 @@ def register():
     if request.method == "GET":
         if "user_id" in session:
             return redirect(url_for("home"))
-        return render_template("register.html")
+        return render_template("auth.html", active_tab="register")
 
     username = request.form.get("username", "").strip()
     email = request.form.get("email", "").strip()
@@ -91,21 +89,21 @@ def register():
     if errors:
         for err in errors:
             flash(err, "error")
-        return render_template("register.html")
+        return render_template("auth.html", active_tab="register")
 
     if database.get_user_by_username(username):
         flash("Username already exists.", "error")
-        return render_template("register.html")
+        return render_template("auth.html", active_tab="register")
 
     if database.get_user_by_email(email):
         flash("Email already registered.", "error")
-        return render_template("register.html")
+        return render_template("auth.html", active_tab="register")
 
     password_hash = generate_password_hash(password)
     user_id = database.add_user(username, email, password_hash)
     if user_id is None:
         flash("Registration failed. Username or email may already exist.", "error")
-        return render_template("register.html")
+        return render_template("auth.html", active_tab="register")
 
     flash("Registration successful. Please log in.", "success")
     return redirect(url_for("login"))
@@ -164,4 +162,4 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)
