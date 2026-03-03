@@ -1,3 +1,4 @@
+import json
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -117,47 +118,76 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/delete-analysis/<int:analysis_id>", methods=["POST"])
+@login_required
+def delete_analysis(analysis_id):
+    """Delete a specific analysis."""
+    success = database.delete_analysis(analysis_id, session["user_id"])
+    if success:
+        flash("Analysis deleted.", "success")
+    else:
+        flash("Could not delete analysis.", "error")
+    return redirect(url_for("home"))
+
+
 @app.route("/home", methods=["GET", "POST"])
 @login_required
 def home():
     """Home page - upload resume and view score/tips. Shows past analyses."""
-    if request.method == "GET":
-        analyses = database.get_analyses_by_user(session["user_id"])
-        return render_template("home.html", analyses=analyses)
+    # Handle POST: file upload
+    if request.method == "POST":
+        if "resume" not in request.files:
+            flash("No file was selected.", "error")
+            return redirect(url_for("home"))
 
-    # POST: handle file upload
-    if "resume" not in request.files:
-        flash("No file was selected.", "error")
+        file = request.files["resume"]
+        if file.filename == "":
+            flash("No file was selected.", "error")
+            return redirect(url_for("home"))
+
+        if not analyzer.allowed_file(file.filename):
+            flash("Invalid file type. Please upload PDF, DOCX, or TXT.", "error")
+            return redirect(url_for("home"))
+
+        try:
+            file_content = file.read()
+        except Exception:
+            flash("Error reading file. Please try again.", "error")
+            return redirect(url_for("home"))
+
+        # Get job description if provided
+        job_description = request.form.get("job_description", "").strip()
+
+        text = analyzer.extract_text_from_file(file_content, file.filename)
+        score, tips, detailed_results = analyzer.analyze_resume(text, job_description if job_description else None)
+
+        # Save analysis to database
+        database.add_analysis(session["user_id"], file.filename, score, tips, detailed_results)
+
+        # Store results in session for PRG pattern
+        session["last_analysis"] = {
+            "filename": file.filename,
+            "score": score,
+            "tips": tips,
+            "detailed_results": detailed_results
+        }
+
+        flash("Resume analyzed successfully!", "success")
         return redirect(url_for("home"))
 
-    file = request.files["resume"]
-    if file.filename == "":
-        flash("No file was selected.", "error")
-        return redirect(url_for("home"))
-
-    if not analyzer.allowed_file(file.filename):
-        flash("Invalid file type. Please upload PDF, DOCX, or TXT.", "error")
-        return redirect(url_for("home"))
-
-    try:
-        file_content = file.read()
-    except Exception:
-        flash("Error reading file. Please try again.", "error")
-        return redirect(url_for("home"))
-
-    text = analyzer.extract_text_from_file(file_content, file.filename)
-    score, tips = analyzer.analyze_resume(text)
-
-    # Save analysis to database
-    database.add_analysis(session["user_id"], file.filename, score, tips)
-
+    # GET request: show page with analyses and any stored results
     analyses = database.get_analyses_by_user(session["user_id"])
+
+    # Pop results from session if they exist (one-time display)
+    last_analysis = session.pop("last_analysis", None)
+
     return render_template(
         "home.html",
         analyses=analyses,
-        last_score=score,
-        last_tips=tips,
-        last_filename=file.filename,
+        last_filename=last_analysis["filename"] if last_analysis else None,
+        last_score=last_analysis["score"] if last_analysis else None,
+        last_tips=last_analysis["tips"] if last_analysis else None,
+        last_detailed=last_analysis.get("detailed_results") if last_analysis else None,
     )
 
 

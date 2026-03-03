@@ -2,6 +2,7 @@
 
 import sqlite3
 import os
+import json
 from datetime import datetime
 from contextlib import contextmanager
 
@@ -39,10 +40,17 @@ def init_db():
             filename TEXT NOT NULL,
             score INTEGER NOT NULL,
             tips TEXT NOT NULL,
+            detailed_results TEXT,
             uploaded_at TEXT NOT NULL,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     """)
+
+    # Add detailed_results column if it doesn't exist (for existing databases)
+    try:
+        cursor.execute("SELECT detailed_results FROM analyses LIMIT 1")
+    except sqlite3.OperationalError:
+        cursor.execute("ALTER TABLE analyses ADD COLUMN detailed_results TEXT")
 
     conn.commit()
     conn.close()
@@ -104,17 +112,20 @@ def get_user_by_id(user_id):
         return dict(row) if row else None
 
 
-def add_analysis(user_id, filename, score, tips):
+def add_analysis(user_id, filename, score, tips, detailed_results=None):
     """
     Add a resume analysis record.
     tips should be a list of strings; we store as newline-separated text.
+    detailed_results is a dict stored as JSON.
     """
     tips_text = "\n".join(tips) if isinstance(tips, list) else tips
+    detailed_json = json.dumps(detailed_results) if detailed_results else None
+
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO analyses (user_id, filename, score, tips, uploaded_at) VALUES (?, ?, ?, ?, ?)",
-            (user_id, filename, score, tips_text, datetime.utcnow().isoformat())
+            "INSERT INTO analyses (user_id, filename, score, tips, detailed_results, uploaded_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (user_id, filename, score, tips_text, detailed_json, datetime.utcnow().isoformat())
         )
         return cursor.lastrowid
 
@@ -132,5 +143,17 @@ def get_analyses_by_user(user_id, limit=10):
         for row in rows:
             d = dict(row)
             d["tips"] = d["tips"].split("\n") if d["tips"] else []
+            d["detailed_results"] = json.loads(d["detailed_results"]) if d.get("detailed_results") else None
             result.append(d)
         return result
+
+
+def delete_analysis(analysis_id, user_id):
+    """Delete an analysis by ID, verifying it belongs to the user. Returns True if deleted."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM analyses WHERE id = ? AND user_id = ?",
+            (analysis_id, user_id)
+        )
+        return cursor.rowcount > 0

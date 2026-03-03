@@ -4,3 +4,7 @@ __pycache__/
 .env
 instance/
 *.db
+.claude/
+.agents
+.cursor/
+.DS_Store

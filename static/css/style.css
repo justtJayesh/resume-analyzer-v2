@@ -18,8 +18,8 @@
     --border: #e7e5e4;
     --success: #059669;
     --error: #b91c1c;
-    --display: 'Syne', sans-serif;
-    --body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --display: "Syne", sans-serif;
+    --body: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
     --space-8: 8px;
     --space-16: 16px;
     --space-24: 24px;
@@ -40,7 +40,7 @@ body {
 }
 
 body::before {
-    content: '';
+    content: "";
     position: fixed;
     inset: 0;
     background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
@@ -49,13 +49,17 @@ body::before {
 }
 
 body::after {
-    content: '';
+    content: "";
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     height: 280px;
-    background: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(13, 148, 136, 0.08) 0%, transparent 55%);
+    background: radial-gradient(
+        ellipse 120% 80% at 50% -20%,
+        rgba(13, 148, 136, 0.08) 0%,
+        transparent 55%
+    );
     pointer-events: none;
     z-index: 0;
 }
@@ -80,17 +84,24 @@ body::after {
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--card-border);
     flex-wrap: wrap;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 2px 12px rgba(28, 25, 23, 0.04);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.6) inset,
+        0 2px 12px rgba(28, 25, 23, 0.04);
 }
 
 .navbar::after {
-    content: '';
+    content: "";
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 50%, transparent 100%);
+    background: linear-gradient(
+        90deg,
+        var(--primary) 0%,
+        var(--primary-dark) 50%,
+        transparent 100%
+    );
     opacity: 0.85;
     border-radius: 0 0 2px 2px;
 }
@@ -102,7 +113,9 @@ body::after {
     letter-spacing: -0.03em;
     color: var(--primary);
     text-decoration: none;
-    transition: color var(--transition), transform var(--transition);
+    transition:
+        color var(--transition),
+        transform var(--transition);
 }
 
 .nav-brand:hover {
@@ -128,7 +141,7 @@ body::after {
 }
 
 .nav-link::after {
-    content: '';
+    content: "";
     position: absolute;
     left: 0;
     right: 0;
@@ -212,7 +225,9 @@ body::after {
     padding: var(--space-32);
     border-radius: var(--radius-lg);
     border: 1px solid var(--card-border);
-    box-shadow: 0 4px 24px rgba(13, 148, 136, 0.06), 0 24px 48px -12px rgba(28, 25, 23, 0.08);
+    box-shadow:
+        0 4px 24px rgba(13, 148, 136, 0.06),
+        0 24px 48px -12px rgba(28, 25, 23, 0.08);
 }
 
 .auth-card h1 {
@@ -260,11 +275,17 @@ body::after {
     font-weight: 600;
     letter-spacing: 0.02em;
     cursor: pointer;
-    transition: transform var(--transition), box-shadow var(--transition);
+    transition:
+        transform var(--transition),
+        box-shadow var(--transition);
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    background: linear-gradient(
+        135deg,
+        var(--primary) 0%,
+        var(--primary-dark) 100%
+    );
     color: #fff;
     box-shadow: 0 4px 16px rgba(13, 148, 136, 0.3);
 }
@@ -297,7 +318,9 @@ body::after {
     padding: var(--space-24);
     border-radius: var(--radius-lg);
     border: 1px solid var(--card-border);
-    box-shadow: 0 4px 24px rgba(13, 148, 136, 0.06), 0 24px 48px -12px rgba(28, 25, 23, 0.08);
+    box-shadow:
+        0 4px 24px rgba(13, 148, 136, 0.06),
+        0 24px 48px -12px rgba(28, 25, 23, 0.08);
     margin-bottom: var(--space-32);
 }
 
@@ -316,7 +339,9 @@ body::after {
     padding: var(--space-24);
     border-radius: var(--radius-lg);
     border: 1px solid var(--card-border);
-    box-shadow: 0 4px 24px rgba(13, 148, 136, 0.06), 0 24px 48px -12px rgba(28, 25, 23, 0.08);
+    box-shadow:
+        0 4px 24px rgba(13, 148, 136, 0.06),
+        0 24px 48px -12px rgba(28, 25, 23, 0.08);
     margin-bottom: var(--space-32);
 }
 
@@ -381,7 +406,9 @@ body::after {
     margin-bottom: var(--space-8);
     border: 1px solid var(--card-border);
     box-shadow: 0 2px 8px rgba(28, 25, 23, 0.04);
-    transition: box-shadow var(--transition), border-color var(--transition);
+    transition:
+        box-shadow var(--transition),
+        border-color var(--transition);
 }
 
 .history-item:hover {
