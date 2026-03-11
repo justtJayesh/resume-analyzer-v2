@@ -48,6 +48,97 @@
         }
     }
 
+    /* Layout with Sidebar for Analysis Results */
+    .home-page .detail-layout {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+    }
+
+    .home-page .detail-main {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .home-page .detail-sidebar {
+        flex: 0 0 30%;
+        position: sticky;
+        top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .home-page .sidebar-card {
+        background: var(--hp-surface);
+        border: 1px solid var(--hp-border);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .home-page .sidebar-card-title {
+        font-family: var(--hp-font-display);
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--hp-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 12px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .home-page .sidebar-card-title svg {
+        width: 18px;
+        height: 18px;
+        color: var(--hp-accent);
+    }
+
+    .home-page .sidebar-job-role {
+        font-family: var(--hp-font-display);
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--hp-text);
+        line-height: 1.4;
+    }
+
+    .home-page .sidebar-job-description {
+        font-size: 0.875rem;
+        color: var(--hp-text);
+        line-height: 1.6;
+        max-height: 320px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .home-page .sidebar-job-description::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .home-page .sidebar-job-description::-webkit-scrollbar-track {
+        background: var(--hp-surface-elevated);
+        border-radius: 3px;
+    }
+
+    .home-page .sidebar-job-description::-webkit-scrollbar-thumb {
+        background: var(--hp-border);
+        border-radius: 3px;
+    }
+
+    @media (max-width: 1024px) {
+        .home-page .detail-layout {
+            flex-direction: column;
+        }
+        .home-page .detail-sidebar {
+            flex: 1 1 auto;
+            width: 100%;
+            position: static;
+        }
+    }
+
     .home-page .container {
         max-width: 1400px;
         margin: 0 auto;
@@ -653,7 +744,7 @@
 
         <!-- Detailed Analysis Results -->
         {% if last_score is defined and last_score is not none %}
-        <div class="detail-page">
+        <div class="detail-page" id="analysis-results">
             <div class="detail-header" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--hp-border);">
                 <div class="detail-title-section">
                     <h1 style="font-family: var(--hp-font-display); font-size: 1.5rem; font-weight: 600; margin: 0 0 8px 0;">Analysis Results</h1>
@@ -667,6 +758,8 @@
                 </span>
             </div>
 
+            <div class="detail-layout">
+                <div class="detail-main">
             <div class="bento-grid" style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px;">
 
                 <!-- Score Card -->
@@ -906,6 +999,39 @@
                         {% endif %}
                     </div>
                 </div>
+            </div>
+                </div>
+
+                {% if last_job_title or last_job_description %}
+                <aside class="detail-sidebar">
+                    {% if last_job_title %}
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                            </svg>
+                            Job Role
+                        </h3>
+                        <div class="sidebar-job-role">{{ last_job_title }}</div>
+                    </div>
+                    {% endif %}
+                    {% if last_job_description %}
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                            </svg>
+                            Job Description
+                        </h3>
+                        <div class="sidebar-job-description">{{ last_job_description }}</div>
+                    </div>
+                    {% endif %}
+                </aside>
+                {% endif %}
             </div>
         </div>
         {% endif %}

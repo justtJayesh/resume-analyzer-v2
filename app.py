@@ -179,11 +179,12 @@ def home():
             "score": score,
             "tips": tips,
             "detailed_results": detailed_results,
-            "job_title": job_title if job_title else None
+            "job_title": job_title if job_title else None,
+            "job_description": job_description if job_description else None
         }
 
         flash("Resume analyzed successfully!", "success")
-        return redirect(url_for("home"))
+        return redirect(url_for("home", _anchor="analysis-results"))
 
     # GET request: show page with any stored results
     # Pop results from session if they exist (one-time display)
@@ -196,6 +197,7 @@ def home():
         last_tips=last_analysis["tips"] if last_analysis else None,
         last_detailed=last_analysis.get("detailed_results") if last_analysis else None,
         last_job_title=last_analysis.get("job_title") if last_analysis else None,
+        last_job_description=last_analysis.get("job_description") if last_analysis else None,
     )
 
 
