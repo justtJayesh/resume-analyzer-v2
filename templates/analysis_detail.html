@@ -1,26 +1,39 @@
 {% extends "base.html" %}
 {% block title %}Analysis Details - CVNest{% endblock %}
 {% block head_extra %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     .detail-page {
-        --hp-accent: #0d9488;
-        --hp-accent-light: #14b8a6;
-        --hp-accent-soft: rgba(13, 148, 136, 0.08);
-        --hp-accent-subtle: rgba(13, 148, 136, 0.04);
+        --hp-bg: #f8f6f3;
         --hp-surface: #ffffff;
-        --hp-surface-elevated: #fafafa;
-        --hp-bg: #f5f5f4;
-        --hp-border: rgba(0, 0, 0, 0.08);
+        --hp-surface-elevated: #faf9f7;
         --hp-text: #1a1a1a;
-        --hp-text-muted: #737373;
-        --hp-orange: #f97316;
-        --hp-orange-soft: rgba(249, 115, 22, 0.08);
+        --hp-text-muted: #6b6b6b;
+        --hp-text-light: #9a9a9a;
+        --hp-accent: #0d7377;
+        --hp-accent-light: #14919b;
+        --hp-accent-soft: rgba(13, 115, 119, 0.1);
+        --hp-accent-subtle: rgba(13, 115, 119, 0.05);
+        --hp-border: rgba(0, 0, 0, 0.08);
+        --hp-border-light: rgba(0, 0, 0, 0.04);
+        --hp-danger: #dc2626;
+        --hp-danger-soft: rgba(220, 38, 38, 0.1);
+        --hp-warning: #d97706;
+        --hp-warning-soft: rgba(217, 119, 6, 0.1);
+        --hp-success: #059669;
+        --hp-success-soft: rgba(5, 150, 105, 0.1);
+        --hp-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+        --hp-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+        --hp-font-display: 'Playfair Display', Georgia, serif;
+        --hp-font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     .detail-page .container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: 40px 24px;
+        padding: 48px 24px;
         min-height: calc(100vh - 72px);
     }
 
@@ -28,12 +41,12 @@
     .back-link {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         color: var(--hp-text-muted);
         text-decoration: none;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
         font-weight: 500;
-        margin-bottom: 24px;
+        margin-bottom: 32px;
         transition: color 0.2s ease;
     }
 
@@ -51,15 +64,18 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 32px;
+        margin-bottom: 40px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid var(--hp-border);
     }
 
-    .detail-title {
-        font-family: 'Syne', sans-serif;
-        font-size: 1.5rem;
-        font-weight: 800;
+    .detail-title-section h1 {
+        font-family: var(--hp-font-display);
+        font-size: 2rem;
+        font-weight: 600;
         color: var(--hp-text);
-        margin: 0;
+        margin: 0 0 8px 0;
+        letter-spacing: -0.02em;
     }
 
     .detail-meta {
@@ -69,88 +85,101 @@
     }
 
     .detail-date {
-        font-size: 0.9rem;
+        font-size: 0.875rem;
         color: var(--hp-text-muted);
     }
 
-    .detail-score {
-        font-family: 'Syne', sans-serif;
-        font-size: 0.95rem;
-        font-weight: 700;
-        padding: 6px 14px;
-        border-radius: 16px;
+    .detail-score-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 24px;
+        font-family: var(--hp-font-display);
+        font-size: 1rem;
+        font-weight: 600;
     }
 
-    .detail-score.excellent { background: rgba(5, 150, 105, 0.12); color: #059669; }
-    .detail-score.good { background: var(--hp-accent-soft); color: var(--hp-accent); }
-    .detail-score.average { background: var(--hp-orange-soft); color: #ea580c; }
-    .detail-score.needs-work { background: rgba(185, 28, 28, 0.1); color: #b91c1c; }
+    .detail-score-badge.excellent { background: var(--hp-success-soft); color: var(--hp-success); }
+    .detail-score-badge.good { background: var(--hp-accent-soft); color: var(--hp-accent); }
+    .detail-score-badge.average { background: var(--hp-warning-soft); color: var(--hp-warning); }
+    .detail-score-badge.needs-work { background: var(--hp-danger-soft); color: var(--hp-danger); }
 
-    /* Two Column Layout */
-    .detail-grid {
+    /* Bento Grid Layout */
+    .bento-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-    }
-
-    @media (max-width: 900px) {
-        .detail-grid {
-            grid-template-columns: 1fr;
-        }
+        grid-template-columns: repeat(12, 1fr);
+        gap: 20px;
     }
 
     /* Card Base */
     .detail-card {
         background: var(--hp-surface);
         border: 1px solid var(--hp-border);
-        border-radius: 12px;
-        padding: 24px;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: var(--hp-shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .detail-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--hp-shadow-lg);
     }
 
     .detail-card-title {
-        font-family: 'Syne', sans-serif;
-        font-size: 1rem;
-        font-weight: 700;
+        font-family: var(--hp-font-display);
+        font-size: 1.125rem;
+        font-weight: 600;
         color: var(--hp-text);
-        margin: 0 0 20px 0;
+        margin: 0 0 24px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    /* Score Circle */
-    .score-section {
+    .detail-card-title svg {
+        width: 20px;
+        height: 20px;
+        color: var(--hp-accent);
+    }
+
+    /* Score Card - Spans 4 columns */
+    .score-card {
+        grid-column: span 4;
         text-align: center;
-        padding: 20px 0;
     }
 
-    .score-circle-large {
+    .score-circle-container {
         position: relative;
-        width: 140px;
-        height: 140px;
-        margin: 0 auto 16px;
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 24px;
     }
 
-    .score-circle-large svg {
+    .score-circle-container svg {
         transform: rotate(-90deg);
         width: 100%;
         height: 100%;
     }
 
-    .score-circle-large .track {
+    .score-circle-container .track {
         fill: none;
         stroke: var(--hp-accent-subtle);
-        stroke-width: 10;
+        stroke-width: 12;
     }
 
-    .score-circle-large .progress {
+    .score-circle-container .progress {
         fill: none;
-        stroke: url(#scoreGradientDetail);
-        stroke-width: 10;
+        stroke: url(#scoreGradient);
+        stroke-width: 12;
         stroke-linecap: round;
-        stroke-dasharray: 377;
-        stroke-dashoffset: 377;
-        transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        stroke-dasharray: 502;
+        stroke-dashoffset: 502;
+        transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .score-circle-large .score-value {
+    .score-circle-container .score-text {
         position: absolute;
         inset: 0;
         display: flex;
@@ -159,332 +188,674 @@
         justify-content: center;
     }
 
-    .score-circle-large .score-number {
-        font-family: 'Syne', sans-serif;
-        font-size: 2.25rem;
-        font-weight: 800;
-        color: var(--hp-accent);
+    .score-circle-container .score-number {
+        font-family: var(--hp-font-display);
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--hp-text);
         line-height: 1;
     }
 
-    .score-circle-large .score-label {
-        font-size: 0.7rem;
+    .score-circle-container .score-label {
+        font-size: 0.75rem;
         color: var(--hp-text-muted);
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.15em;
         margin-top: 4px;
+    }
+
+    .score-rating {
+        font-family: var(--hp-font-display);
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--hp-accent);
+        margin-bottom: 8px;
     }
 
     /* Score Breakdown */
     .score-breakdown {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-top: 16px;
-    }
-
-    @media (max-width: 500px) {
-        .score-breakdown {
-            grid-template-columns: 1fr;
-        }
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
     .breakdown-item {
-        text-align: center;
-        padding: 12px 10px;
-        background: var(--hp-accent-subtle);
-        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--hp-border-light);
     }
 
-    .breakdown-item .label {
-        font-size: 0.7rem;
+    .breakdown-item:last-child {
+        border-bottom: none;
+    }
+
+    .breakdown-label {
+        font-size: 0.8rem;
         color: var(--hp-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 4px;
     }
 
-    .breakdown-item .value {
-        font-family: 'Syne', sans-serif;
-        font-size: 1.1rem;
+    .breakdown-bar {
+        flex: 1;
+        height: 6px;
+        background: var(--hp-accent-subtle);
+        border-radius: 3px;
+        margin: 0 12px;
+        overflow: hidden;
+    }
+
+    .breakdown-bar-fill {
+        height: 100%;
+        background: var(--hp-accent);
+        border-radius: 3px;
+        transition: width 1s ease;
+    }
+
+    .breakdown-value {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--hp-text);
+        min-width: 40px;
+        text-align: right;
+    }
+
+    /* Statistics Card - Spans 4 columns */
+    .stats-card {
+        grid-column: span 4;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .stat-item {
+        padding: 16px;
+        background: var(--hp-surface-elevated);
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-family: var(--hp-font-display);
+        font-size: 1.75rem;
         font-weight: 700;
         color: var(--hp-text);
+        line-height: 1.2;
     }
 
-    /* Section Checklist */
-    .section-checklist {
-        margin-top: 24px;
-    }
-
-    .checklist-title {
+    .stat-label {
         font-size: 0.75rem;
-        font-weight: 600;
         color: var(--hp-text-muted);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        margin-bottom: 10px;
+        margin-top: 4px;
     }
 
-    .checklist-items {
+    /* Comparison Card - Spans 4 columns */
+    .comparison-card {
+        grid-column: span 4;
+    }
+
+    .comparison-items {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 16px;
     }
 
-    .checklist-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        background: var(--hp-surface-elevated);
-        border-radius: 8px;
-        font-size: 0.9rem;
-    }
-
-    .checklist-item .check-icon {
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .checklist-item .check-icon.present {
-        background: rgba(5, 150, 105, 0.15);
-        color: #059669;
-    }
-
-    .checklist-item .check-icon.missing {
-        background: rgba(185, 28, 28, 0.1);
-        color: #b91c1c;
-    }
-
-    .checklist-item .check-icon svg {
-        width: 10px;
-        height: 10px;
-    }
-
-    /* Skills Tags */
-    .skills-section {
-        margin-top: 20px;
-    }
-
-    .skills-group {
-        margin-bottom: 14px;
-    }
-
-    .skills-group-title {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--hp-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 8px;
-    }
-
-    .skills-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    .skill-tag {
-        font-size: 0.75rem;
-        padding: 4px 10px;
-        background: var(--hp-accent-soft);
-        color: var(--hp-accent);
-        border-radius: 10px;
-    }
-
-    /* Tips */
-    .tips-section {
-        margin-top: 20px;
-    }
-
-    .tips-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
+    .comparison-item {
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
 
-    .tips-list li {
+    .comparison-header {
         display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 12px 14px;
-        background: var(--hp-orange-soft);
-        border-radius: 8px;
-        font-size: 0.9rem;
-        line-height: 1.5;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .comparison-label {
+        font-size: 0.8rem;
+        font-weight: 500;
         color: var(--hp-text);
     }
 
-    .tips-list li svg {
-        width: 14px;
-        height: 14px;
-        color: var(--hp-orange);
-        flex-shrink: 0;
-        margin-top: 2px;
+    .comparison-values {
+        font-size: 0.75rem;
+        color: var(--hp-text-muted);
     }
 
-    /* ATS Section */
-    .ats-section {
-        margin-top: 20px;
-        padding-top: 16px;
-        border-top: 1px solid var(--hp-border);
-    }
-
-    .ats-score-display {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px;
+    .comparison-bar {
+        height: 8px;
         background: var(--hp-accent-subtle);
-        border-radius: 8px;
+        border-radius: 4px;
+        overflow: hidden;
     }
 
-    .ats-label {
-        font-weight: 500;
-        font-size: 0.9rem;
+    .comparison-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 1s ease;
     }
 
-    .ats-value {
-        font-family: 'Syne', sans-serif;
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--hp-accent);
+    .comparison-bar-fill.good { background: var(--hp-success); }
+    .comparison-bar-fill.low { background: var(--hp-warning); }
+    .comparison-bar-fill.high { background: var(--hp-danger); }
+
+    /* Keywords Card - Spans 6 columns */
+    .keywords-card {
+        grid-column: span 6;
     }
 
-    /* JD Section */
-    .jd-badge {
-        display: inline-block;
-        padding: 5px 12px;
-        background: var(--hp-accent-soft);
-        color: var(--hp-accent);
-        border-radius: 12px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        margin-bottom: 16px;
-    }
-
-    /* Job Match */
-    .job-match-section {
+    .keywords-cloud {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
         margin-bottom: 20px;
     }
 
-    .match-cards {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin-top: 10px;
+    .keyword-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: var(--hp-surface-elevated);
+        border-radius: 16px;
+        font-size: 0.8rem;
+        color: var(--hp-text);
     }
 
-    .match-card {
-        padding: 14px;
-        background: var(--hp-accent-subtle);
-        border-radius: 8px;
-        text-align: center;
-    }
-
-    .match-card .match-label {
-        font-size: 0.7rem;
-        color: var(--hp-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 4px;
-    }
-
-    .match-card .match-value {
-        font-family: 'Syne', sans-serif;
-        font-size: 1.3rem;
-        font-weight: 700;
+    .keyword-tag .count {
+        font-weight: 600;
         color: var(--hp-accent);
     }
 
-    .match-card .match-value.excellent { color: #059669; }
-    .match-card .match-value.good { color: var(--hp-accent); }
-    .match-card .match-value.needs-work { color: #ea580c; }
-
-    /* Skill Gaps */
-    .skill-gaps {
-        margin-top: 16px;
+    .power-words-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--hp-border-light);
     }
 
-    .gap-group {
-        margin-bottom: 12px;
-    }
-
-    .gap-title {
+    .power-words-title {
         font-size: 0.75rem;
         font-weight: 600;
         color: var(--hp-text-muted);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        margin-bottom: 6px;
+        margin-bottom: 12px;
     }
 
-    .gap-tags {
+    .power-words-list {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
     }
 
-    .gap-tag {
+    .power-word {
+        padding: 4px 10px;
+        background: var(--hp-success-soft);
+        color: var(--hp-success);
+        border-radius: 12px;
         font-size: 0.7rem;
-        padding: 3px 8px;
-        background: rgba(185, 28, 28, 0.1);
-        color: #b91c1c;
+        font-weight: 500;
+    }
+
+    /* Strengths Card - Spans 6 columns */
+    .strengths-card {
+        grid-column: span 6;
+    }
+
+    .strengths-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .strength-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px;
+        background: var(--hp-surface-elevated);
+        border-radius: 10px;
+    }
+
+    .strength-icon {
+        width: 24px;
+        height: 24px;
+        background: var(--hp-success-soft);
+        color: var(--hp-success);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .strength-icon svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .strength-text {
+        font-size: 0.875rem;
+        color: var(--hp-text);
+        line-height: 1.5;
+    }
+
+    /* Weaknesses Card - Spans 12 columns */
+    .weaknesses-card {
+        grid-column: span 12;
+    }
+
+    .weakness-sections {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .weakness-section {
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    .weakness-section.high {
+        background: var(--hp-danger-soft);
+    }
+
+    .weakness-section.medium {
+        background: var(--hp-warning-soft);
+    }
+
+    .weakness-section.low {
+        background: var(--hp-accent-soft);
+    }
+
+    .weakness-section-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 16px;
+    }
+
+    .weakness-section.high .weakness-section-title { color: var(--hp-danger); }
+    .weakness-section.medium .weakness-section-title { color: var(--hp-warning); }
+    .weakness-section.low .weakness-section-title { color: var(--hp-accent); }
+
+    .weakness-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .weakness-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .weakness-issue {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--hp-text);
+    }
+
+    .weakness-suggestion {
+        font-size: 0.75rem;
+        color: var(--hp-text-muted);
+    }
+
+    /* Section Analysis Card - Spans 6 columns */
+    .section-card {
+        grid-column: span 6;
+    }
+
+    .section-items {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .section-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: var(--hp-surface-elevated);
+        border-radius: 10px;
+    }
+
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .section-icon.present {
+        background: var(--hp-success-soft);
+        color: var(--hp-success);
+    }
+
+    .section-icon.missing {
+        background: var(--hp-danger-soft);
+        color: var(--hp-danger);
+    }
+
+    .section-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .section-info {
+        flex: 1;
+    }
+
+    .section-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--hp-text);
+        margin-bottom: 4px;
+    }
+
+    .section-status {
+        font-size: 0.75rem;
+        color: var(--hp-text-muted);
+    }
+
+    .section-score {
+        font-family: var(--hp-font-display);
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .section-score.good { color: var(--hp-success); }
+    .section-score.needs-work { color: var(--hp-warning); }
+
+    /* ATS Card - Spans 6 columns */
+    .ats-card {
+        grid-column: span 6;
+    }
+
+    .ats-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .ats-score-display {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ats-score-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--hp-font-display);
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    .ats-score-circle.excellent { background: var(--hp-success-soft); color: var(--hp-success); }
+    .ats-score-circle.good { background: var(--hp-accent-soft); color: var(--hp-accent); }
+    .ats-score-circle.needs-work { background: var(--hp-warning-soft); color: var(--hp-warning); }
+
+    .ats-score-label {
+        font-size: 0.8rem;
+        color: var(--hp-text-muted);
+    }
+
+    .ats-issues-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ats-issue {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
         border-radius: 8px;
     }
 
-    /* JD Text */
-    .jd-text-section {
-        margin-top: 20px;
+    .ats-issue.critical { background: var(--hp-danger-soft); }
+    .ats-issue.high { background: rgba(220, 38, 38, 0.06); }
+    .ats-issue.medium { background: var(--hp-warning-soft); }
+    .ats-issue.low { background: var(--hp-accent-soft); }
+
+    .ats-issue-icon {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        margin-top: 2px;
     }
 
-    .jd-text-title {
+    .ats-issue.critical .ats-issue-icon { color: var(--hp-danger); }
+    .ats-issue.high .ats-issue-icon { color: var(--hp-danger); }
+    .ats-issue.medium .ats-issue-icon { color: var(--hp-warning); }
+    .ats-issue.low .ats-issue-icon { color: var(--hp-accent); }
+
+    .ats-issue-content {
+        flex: 1;
+    }
+
+    .ats-issue-text {
+        font-size: 0.8rem;
+        color: var(--hp-text);
+        margin-bottom: 4px;
+    }
+
+    .ats-issue-fix {
+        font-size: 0.7rem;
+        color: var(--hp-text-muted);
+    }
+
+    /* Skills Card - Spans 12 columns */
+    .skills-full-card {
+        grid-column: span 12;
+    }
+
+    .skills-sections {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+
+    .skills-section-group h4 {
         font-size: 0.75rem;
         font-weight: 600;
         color: var(--hp-text-muted);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
     }
 
-    .jd-text-content {
+    .skills-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .skill-tag {
+        padding: 6px 14px;
+        background: var(--hp-accent-soft);
+        color: var(--hp-accent);
+        border-radius: 16px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Job Match Card - Spans 6 columns */
+    .job-match-card {
+        grid-column: span 6;
+    }
+
+    .match-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .match-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: var(--hp-accent-soft);
+        color: var(--hp-accent);
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .match-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .match-stat {
+        padding: 16px;
+        background: var(--hp-surface-elevated);
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .match-stat-value {
+        font-family: var(--hp-font-display);
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .match-stat-label {
+        font-size: 0.7rem;
+        color: var(--hp-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .skill-gaps-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--hp-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 12px;
+    }
+
+    .gap-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .gap-tag {
+        padding: 4px 10px;
+        background: var(--hp-danger-soft);
+        color: var(--hp-danger);
+        border-radius: 12px;
+        font-size: 0.7rem;
+    }
+
+    /* Tips Card */
+    .tips-card {
+        grid-column: span 6;
+    }
+
+    .tips-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
         padding: 14px;
         background: var(--hp-surface-elevated);
-        border-radius: 8px;
+        border-radius: 10px;
+    }
+
+    .tip-icon {
+        width: 20px;
+        height: 20px;
+        color: var(--hp-accent);
+        flex-shrink: 0;
+    }
+
+    .tip-text {
         font-size: 0.85rem;
-        line-height: 1.6;
         color: var(--hp-text);
-        overflow-y: auto;
-        white-space: pre-wrap;
-        word-wrap: break-word;
+        line-height: 1.5;
     }
 
-    /* No JD State */
-    .no-jd {
-        text-align: center;
-        padding: 32px 16px;
-        color: var(--hp-text-muted);
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .bento-grid {
+            grid-template-columns: repeat(6, 1fr);
+        }
+        .score-card, .stats-card, .comparison-card { grid-column: span 3; }
+        .keywords-card, .strengths-card, .section-card, .ats-card,
+        .job-match-card, .tips-card { grid-column: span 6; }
+        .weaknesses-card, .skills-full-card { grid-column: span 6; }
+        .weakness-sections { grid-template-columns: 1fr; }
     }
 
-    .no-jd svg {
-        width: 40px;
-        height: 40px;
-        margin-bottom: 12px;
-        opacity: 0.4;
+    @media (max-width: 768px) {
+        .bento-grid { grid-template-columns: 1fr; }
+        .score-card, .stats-card, .comparison-card,
+        .keywords-card, .strengths-card, .section-card, .ats-card,
+        .job-match-card, .tips-card, .weaknesses-card,
+        .skills-full-card { grid-column: span 1; }
+        .skills-sections { grid-template-columns: 1fr; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .detail-header { flex-direction: column; align-items: flex-start; gap: 16px; }
     }
 
-    .no-jd p {
-        font-size: 0.9rem;
-        margin: 0;
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
+
+    .detail-card {
+        animation: fadeInUp 0.6s ease forwards;
+        opacity: 0;
+    }
+
+    .detail-card:nth-child(1) { animation-delay: 0.1s; }
+    .detail-card:nth-child(2) { animation-delay: 0.2s; }
+    .detail-card:nth-child(3) { animation-delay: 0.3s; }
+    .detail-card:nth-child(4) { animation-delay: 0.4s; }
+    .detail-card:nth-child(5) { animation-delay: 0.5s; }
+    .detail-card:nth-child(6) { animation-delay: 0.6s; }
+    .detail-card:nth-child(7) { animation-delay: 0.7s; }
+    .detail-card:nth-child(8) { animation-delay: 0.8s; }
+    .detail-card:nth-child(9) { animation-delay: 0.9s; }
+    .detail-card:nth-child(10) { animation-delay: 1s; }
 </style>
 {% endblock %}
 
@@ -500,239 +871,527 @@
         </a>
 
         <div class="detail-header">
-            <div>
-                <h1 class="detail-title">{{ analysis.filename }}</h1>
-                <span class="detail-date">Analyzed on {{ analysis.uploaded_at[:10] if analysis.uploaded_at else '' }}</span>
+            <div class="detail-title-section">
+                <h1>{{ analysis.filename }}</h1>
+                <div class="detail-meta">
+                    <span class="detail-date">Analyzed on {{ analysis.uploaded_at[:10] if analysis.uploaded_at else '' }}</span>
+                </div>
             </div>
-            <span class="detail-score {% if analysis.score >= 80 %}excellent{% elif analysis.score >= 60 %}good{% elif analysis.score >= 40 %}average{% else %}needs-work{% endif %}">
+            <span class="detail-score-badge {% if analysis.score >= 80 %}excellent{% elif analysis.score >= 60 %}good{% elif analysis.score >= 40 %}average{% else %}needs-work{% endif %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
                 {{ analysis.score }}/100
             </span>
         </div>
 
-        <div class="detail-grid">
-            <!-- Left Column: Resume Analysis -->
-            <div class="detail-card">
-                <h2 class="detail-card-title">Resume Analysis</h2>
+        <div class="bento-grid">
+            <!-- Score Card -->
+            <div class="detail-card score-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Overall Score
+                </h2>
 
-                <!-- Score Circle -->
-                <div class="score-section">
-                    <div class="score-circle-large">
-                        <svg viewBox="0 0 140 140">
-                            <defs>
-                                <linearGradient id="scoreGradientDetail" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#0d9488"/>
-                                    <stop offset="100%" stop-color="#14b8a6"/>
-                                </linearGradient>
-                            </defs>
-                            <circle class="track" cx="70" cy="70" r="60"/>
-                            <circle class="progress" cx="70" cy="70" r="60" data-score="{{ analysis.score }}"/>
-                        </svg>
-                        <div class="score-value">
-                            <span class="score-number">{{ analysis.score }}</span>
-                            <span class="score-label">Score</span>
+                <div class="score-circle-container">
+                    <svg viewBox="0 0 180 180">
+                        <defs>
+                            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#0d7377"/>
+                                <stop offset="100%" stop-color="#14919b"/>
+                            </linearGradient>
+                        </defs>
+                        <circle class="track" cx="90" cy="90" r="80"/>
+                        <circle class="progress" cx="90" cy="90" r="80" data-score="{{ analysis.score }}"/>
+                    </svg>
+                    <div class="score-text">
+                        <span class="score-number">{{ analysis.score }}</span>
+                        <span class="score-label">Score</span>
+                    </div>
+                </div>
+
+                <div class="score-rating">
+                    {% if analysis.score >= 80 %}Excellent
+                    {% elif analysis.score >= 60 %}Good
+                    {% elif analysis.score >= 40 %}Average
+                    {% else %}Needs Work{% endif %}
+                </div>
+
+                <div class="score-breakdown">
+                    {% if analysis.detailed_results and analysis.detailed_results.score_breakdown and analysis.detailed_results.score_breakdown.scoring %}
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Sections</span>
+                        <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width: {{ analysis.detailed_results.score_breakdown.scoring.sections_score * 3.33 }}%"></div></div>
+                        <span class="breakdown-value">{{ analysis.detailed_results.score_breakdown.scoring.sections_score }}/30</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Contact</span>
+                        <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width: {{ analysis.detailed_results.score_breakdown.scoring.contact_score * 10 }}%"></div></div>
+                        <span class="breakdown-value">{{ analysis.detailed_results.score_breakdown.scoring.contact_score }}/10</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Formatting</span>
+                        <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width: {{ analysis.detailed_results.score_breakdown.scoring.formatting_score * 20 }}%"></div></div>
+                        <span class="breakdown-value">{{ analysis.detailed_results.score_breakdown.scoring.formatting_score }}/5</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Content</span>
+                        <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width: {{ analysis.detailed_results.score_breakdown.scoring.content_score * 4 }}%"></div></div>
+                        <span class="breakdown-value">{{ analysis.detailed_results.score_breakdown.scoring.content_score }}/25</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Keywords</span>
+                        <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width: {{ analysis.detailed_results.score_breakdown.scoring.keywords_score * 6.67 }}%"></div></div>
+                        <span class="breakdown-value">{{ analysis.detailed_results.score_breakdown.scoring.keywords_score }}/15</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">ATS</span>
+                        <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width: {{ analysis.detailed_results.score_breakdown.scoring.ats_score * 5 }}%"></div></div>
+                        <span class="breakdown-value">{{ analysis.detailed_results.score_breakdown.scoring.ats_score }}/20</span>
+                    </div>
+                    {% else %}
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Structure</span>
+                        <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width: {{ 70 if analysis.score >= 70 else 40 }}%"></div></div>
+                        <span class="breakdown-value">{{ (analysis.score * 0.7)|int }}/70</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Content</span>
+                        <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width: {{ 30 if analysis.score >= 30 else analysis.score }}%"></div></div>
+                        <span class="breakdown-value">{{ (analysis.score * 0.3)|int }}/30</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="detail-card stats-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 20V10M12 20V4M6 20v-6"/>
+                    </svg>
+                    Resume Statistics
+                </h2>
+
+                <div class="stats-grid">
+                    {% if analysis.detailed_results and analysis.detailed_results.text_statistics %}
+                    <div class="stat-item">
+                        <div class="stat-value">{{ analysis.detailed_results.text_statistics.word_count }}</div>
+                        <div class="stat-label">Words</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ analysis.detailed_results.text_statistics.page_estimate }}</div>
+                        <div class="stat-label">Pages</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ analysis.detailed_results.text_statistics.readability_score }}</div>
+                        <div class="stat-label">Readability</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ analysis.detailed_results.text_statistics.bullet_count }}</div>
+                        <div class="stat-label">Bullet Points</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ analysis.detailed_results.text_statistics.quantifiable_achievements }}</div>
+                        <div class="stat-label">Metrics</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ analysis.detailed_results.text_statistics.sentence_count }}</div>
+                        <div class="stat-label">Sentences</div>
+                    </div>
+                    {% else %}
+                    <div class="stat-item">
+                        <div class="stat-value">-</div>
+                        <div class="stat-label">Words</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">-</div>
+                        <div class="stat-label">Pages</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Comparison Card -->
+            <div class="detail-card comparison-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                    </svg>
+                    vs Ideal Resume
+                </h2>
+
+                <div class="comparison-items">
+                    {% if analysis.detailed_results and analysis.detailed_results.benchmarks %}
+                    {% for metric, data in analysis.detailed_results.benchmarks.items() %}
+                    <div class="comparison-item">
+                        <div class="comparison-header">
+                            <span class="comparison-label">{{ metric|replace('_', ' ')|title }}</span>
+                            <span class="comparison-values">{{ data.actual }} / {{ data.ideal }}</span>
+                        </div>
+                        <div class="comparison-bar">
+                            <div class="comparison-bar-fill {% if data.status == 'good' %}good{% elif data.status == 'low' %}low{% else %}high{% endif %}" style="width: {{ data.score }}%"></div>
                         </div>
                     </div>
-
-                    {% if analysis.detailed_results and analysis.detailed_results.skills_analysis %}
-                    <div class="score-breakdown">
-                        <div class="breakdown-item">
-                            <div class="label">Hard Skills</div>
-                            <div class="value">{{ analysis.detailed_results.skills_analysis.hard_skills_count }}</div>
-                        </div>
-                        <div class="breakdown-item">
-                            <div class="label">Soft Skills</div>
-                            <div class="value">{{ analysis.detailed_results.skills_analysis.soft_skills_count }}</div>
-                        </div>
-                        <div class="breakdown-item">
-                            <div class="label">ATS</div>
-                            <div class="value">{{ analysis.detailed_results.ats_compatibility.score }}%</div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="comparison-item">
+                        <div class="comparison-header">
+                            <span class="comparison-label">Word Count</span>
+                            <span class="comparison-values">-</span>
                         </div>
                     </div>
                     {% endif %}
                 </div>
+            </div>
 
-                <!-- Section Checklist -->
-                {% if analysis.detailed_results and analysis.detailed_results.score_breakdown %}
-                <div class="section-checklist">
-                    <div class="checklist-title">Resume Sections</div>
-                    <div class="checklist-items">
-                        <div class="checklist-item">
-                            <span class="check-icon {% if analysis.detailed_results.score_breakdown.sections.experience %}present{% else %}missing{% endif %}">
-                                {% if analysis.detailed_results.score_breakdown.sections.experience %}
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                    <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                                {% else %}
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                    <line x1="18" y1="6" x2="6" y2="18"/>
-                                    <line x1="6" y1="6" x2="18" y2="18"/>
-                                </svg>
-                                {% endif %}
-                            </span>
-                            Experience
-                        </div>
-                        <div class="checklist-item">
-                            <span class="check-icon {% if analysis.detailed_results.score_breakdown.sections.education %}present{% else %}missing{% endif %}">
-                                {% if analysis.detailed_results.score_breakdown.sections.education %}
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                    <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                                {% else %}
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                    <line x1="18" y1="6" x2="6" y2="18"/>
-                                    <line x1="6" y1="6" x2="18" y2="18"/>
-                                </svg>
-                                {% endif %}
-                            </span>
-                            Education
-                        </div>
-                        <div class="checklist-item">
-                            <span class="check-icon {% if analysis.detailed_results.score_breakdown.sections.skills %}present{% else %}missing{% endif %}">
-                                {% if analysis.detailed_results.score_breakdown.sections.skills %}
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                    <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                                {% else %}
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                    <line x1="18" y1="6" x2="6" y2="18"/>
-                                    <line x1="6" y1="6" x2="18" y2="18"/>
-                                </svg>
-                                {% endif %}
-                            </span>
-                            Skills
-                        </div>
-                    </div>
+            <!-- Keywords Card -->
+            <div class="detail-card keywords-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    Keyword Analysis
+                </h2>
+
+                {% if analysis.detailed_results and analysis.detailed_results.keyword_analysis %}
+                <div class="keywords-cloud">
+                    {% for kw in analysis.detailed_results.keyword_analysis.top_keywords[:15] %}
+                    <span class="keyword-tag">{{ kw.word }} <span class="count">{{ kw.count }}</span></span>
+                    {% endfor %}
                 </div>
                 {% endif %}
 
-                <!-- Skills Found -->
-                {% if analysis.detailed_results and analysis.detailed_results.skills_analysis %}
-                <div class="skills-section">
-                    {% if analysis.detailed_results.skills_analysis.hard_skills_found %}
-                    <div class="skills-group">
-                        <div class="skills-group-title">Hard Skills Detected</div>
-                        <div class="skills-tags">
-                            {% for skill in analysis.detailed_results.skills_analysis.hard_skills_found %}
-                            <span class="skill-tag">{{ skill }}</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if analysis.detailed_results.skills_analysis.soft_skills_found %}
-                    <div class="skills-group">
-                        <div class="skills-group-title">Soft Skills Detected</div>
-                        <div class="skills-tags">
-                            {% for skill in analysis.detailed_results.skills_analysis.soft_skills_found %}
-                            <span class="skill-tag">{{ skill }}</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- ATS Compatibility -->
-                {% if analysis.detailed_results and analysis.detailed_results.ats_compatibility %}
-                <div class="ats-section">
-                    <div class="ats-score-display">
-                        <span class="ats-label">ATS Compatibility</span>
-                        <span class="ats-value">{{ analysis.detailed_results.ats_compatibility.score }}%</span>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Tips -->
-                {% if analysis.tips and analysis.tips|length > 0 %}
-                <div class="tips-section">
-                    <div class="checklist-title">Improvement Tips</div>
-                    <ul class="tips-list">
-                        {% for tip in analysis.tips %}
-                        <li>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                            {{ tip }}
-                        </li>
+                {% if analysis.detailed_results and analysis.detailed_results.keyword_analysis and analysis.detailed_results.keyword_analysis.action_verbs_detail %}
+                <div class="power-words-section">
+                    <div class="power-words-title">Power Words Found ({{ analysis.detailed_results.keyword_analysis.action_verbs_detail.power_word_count }})</div>
+                    <div class="power-words-list">
+                        {% for word in analysis.detailed_results.keyword_analysis.action_verbs_detail.power_words_found[:12] %}
+                        <span class="power-word">{{ word }}</span>
                         {% endfor %}
-                    </ul>
+                    </div>
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Right Column: Job Description -->
-            <div class="detail-card">
-                <h2 class="detail-card-title">Job Description</h2>
-
-                {% if analysis.job_title or analysis.job_description %}
-                    {% if analysis.job_title %}
-                    <div class="jd-badge">{{ analysis.job_title }}</div>
-                    {% endif %}
-
-                    {% if analysis.detailed_results and analysis.detailed_results.job_match %}
-                    <div class="job-match-section">
-                        <div class="match-cards">
-                            <div class="match-card">
-                                <div class="match-label">Overall Match</div>
-                                <div class="match-value {% if analysis.detailed_results.job_match.overall_match >= 70 %}excellent{% elif analysis.detailed_results.job_match.overall_match >= 50 %}good{% else %}needs-work{% endif %}">
-                                    {{ analysis.detailed_results.job_match.overall_match }}%
-                                </div>
-                            </div>
-                            <div class="match-card">
-                                <div class="match-label">Keywords</div>
-                                <div class="match-value {% if analysis.detailed_results.job_match.other_keyword_match >= 70 %}excellent{% elif analysis.detailed_results.job_match.other_keyword_match >= 50 %}good{% else %}needs-work{% endif %}">
-                                    {{ analysis.detailed_results.job_match.other_keyword_match }}%
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Skill Gaps -->
-                    {% if analysis.detailed_results.job_match.hard_skill_gaps or analysis.detailed_results.job_match.soft_skill_gaps %}
-                    <div class="skill-gaps">
-                        {% if analysis.detailed_results.job_match.hard_skill_gaps %}
-                        <div class="gap-group">
-                            <div class="gap-title">Missing Hard Skills</div>
-                            <div class="gap-tags">
-                                {% for skill in analysis.detailed_results.job_match.hard_skill_gaps %}
-                                <span class="gap-tag">{{ skill }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if analysis.detailed_results.job_match.soft_skill_gaps %}
-                        <div class="gap-group">
-                            <div class="gap-title">Missing Soft Skills</div>
-                            <div class="gap-tags">
-                                {% for skill in analysis.detailed_results.job_match.soft_skill_gaps %}
-                                <span class="gap-tag">{{ skill }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                    {% endif %}
-
-                    <!-- JD Text -->
-                    {% if analysis.job_description %}
-                    <div class="jd-text-section">
-                        <div class="jd-text-title">Full Job Description</div>
-                        <div class="jd-text-content">{{ analysis.job_description }}</div>
-                    </div>
-                    {% endif %}
-                {% else %}
-                <div class="no-jd">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
+            <!-- Strengths Card -->
+            <div class="detail-card strengths-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
-                    <p>No job description was provided for this analysis.</p>
+                    Strengths
+                </h2>
+
+                <div class="strengths-list">
+                    {% if analysis.detailed_results and analysis.detailed_results.strengths %}
+                        {% for strength in analysis.detailed_results.strengths[:6] %}
+                        <div class="strength-item">
+                            <span class="strength-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </span>
+                            <span class="strength-text">{{ strength }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="strength-item">
+                        <span class="strength-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <span class="strength-text">Resume uploaded successfully</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Weaknesses Card -->
+            <div class="detail-card weaknesses-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="m15 9-6 6M9 9l6 6"/>
+                    </svg>
+                    Improvements Needed
+                </h2>
+
+                <div class="weakness-sections">
+                    <div class="weakness-section high">
+                        <div class="weakness-section-title">High Priority</div>
+                        <div class="weakness-list">
+                            {% if analysis.detailed_results and analysis.detailed_results.weaknesses %}
+                                {% for w in analysis.detailed_results.weaknesses %}
+                                    {% if w.priority == 'high' %}
+                                    <div class="weakness-item">
+                                        <span class="weakness-issue">{{ w.issue }}</span>
+                                        <span class="weakness-suggestion">{{ w.suggestion }}</span>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="weakness-section medium">
+                        <div class="weakness-section-title">Medium Priority</div>
+                        <div class="weakness-list">
+                            {% if analysis.detailed_results and analysis.detailed_results.weaknesses %}
+                                {% for w in analysis.detailed_results.weaknesses %}
+                                    {% if w.priority == 'medium' %}
+                                    <div class="weakness-item">
+                                        <span class="weakness-issue">{{ w.issue }}</span>
+                                        <span class="weakness-suggestion">{{ w.suggestion }}</span>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="weakness-section low">
+                        <div class="weakness-section-title">Low Priority</div>
+                        <div class="weakness-list">
+                            {% if analysis.detailed_results and analysis.detailed_results.weaknesses %}
+                                {% for w in analysis.detailed_results.weaknesses %}
+                                    {% if w.priority == 'low' %}
+                                    <div class="weakness-item">
+                                        <span class="weakness-issue">{{ w.issue }}</span>
+                                        <span class="weakness-suggestion">{{ w.suggestion }}</span>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Analysis Card -->
+            <div class="detail-card section-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    Section Analysis
+                </h2>
+
+                <div class="section-items">
+                    {% if analysis.detailed_results and analysis.detailed_results.section_quality %}
+                    {% for section, data in analysis.detailed_results.section_quality.items() %}
+                    <div class="section-item">
+                        <span class="section-icon {% if data.present %}present{% else %}missing{% endif %}">
+                            {% if data.present %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            {% else %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            {% endif %}
+                        </span>
+                        <div class="section-info">
+                            <div class="section-name">{{ section|title }}</div>
+                            <div class="section-status">{% if data.present %}Present{% else %}Missing{% endif %} - Quality: {{ data.quality_score }}/10</div>
+                        </div>
+                        <span class="section-score {% if data.quality_score >= 5 %}good{% else %}needs-work{% endif %}">{{ data.quality_score }}</span>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="section-item">
+                        <span class="section-icon present">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <div class="section-info">
+                            <div class="section-name">Resume Content</div>
+                            <div class="section-status">Analyzed</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ATS Card -->
+            <div class="detail-card ats-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    ATS Compatibility
+                </h2>
+
+                <div class="ats-header">
+                    <div class="ats-score-display">
+                        <span class="ats-score-circle {% if analysis.detailed_results and analysis.detailed_results.ats_compatibility and analysis.detailed_results.ats_compatibility.score >= 80 %}excellent{% elif analysis.detailed_results and analysis.detailed_results.ats_compatibility and analysis.detailed_results.ats_compatibility.score >= 60 %}good{% else %}needs-work{% endif %}">
+                            {{ analysis.detailed_results.ats_compatibility.score if analysis.detailed_results and analysis.detailed_results.ats_compatibility else 0 }}%
+                        </span>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem;">ATS Score</div>
+                            <div class="ats-score-label">Applicant Tracking System</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ats-issues-list">
+                    {% if analysis.detailed_results and analysis.detailed_results.ats_compatibility and analysis.detailed_results.ats_compatibility.issues_by_severity %}
+                    {% for severity in ['critical', 'high', 'medium', 'low'] %}
+                        {% if analysis.detailed_results.ats_compatibility.issues_by_severity[severity] %}
+                            {% for issue in analysis.detailed_results.ats_compatibility.issues_by_severity[severity][:2] %}
+                            <div class="ats-issue {{ severity }}">
+                                <svg class="ats-issue-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    {% if severity == 'critical' or severity == 'high' %}
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="12"/>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    {% else %}
+                                    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                                    <path d="m9 12 2 2 4-4"/>
+                                    {% endif %}
+                                </svg>
+                                <div class="ats-issue-content">
+                                    <div class="ats-issue-text">{{ issue.issue }}</div>
+                                    <div class="ats-issue-fix">{{ issue.fix }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    <div class="ats-issue low">
+                        <svg class="ats-issue-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                            <path d="m9 12 2 2 4-4"/>
+                        </svg>
+                        <div class="ats-issue-content">
+                            <div class="ats-issue-text">No major issues detected</div>
+                            <div class="ats-issue-fix">Your resume is ATS-friendly</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Skills Card -->
+            <div class="detail-card skills-full-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    Skills Detected
+                </h2>
+
+                <div class="skills-sections">
+                    <div class="skills-section-group">
+                        <h4>Hard Skills ({{ analysis.detailed_results.skills_analysis.hard_skills_count if analysis.detailed_results and analysis.detailed_results.skills_analysis else 0 }})</h4>
+                        <div class="skills-tags">
+                            {% if analysis.detailed_results and analysis.detailed_results.skills_analysis and analysis.detailed_results.skills_analysis.hard_skills_found %}
+                                {% for skill in analysis.detailed_results.skills_analysis.hard_skills_found %}
+                                <span class="skill-tag">{{ skill }}</span>
+                                {% endfor %}
+                            {% else %}
+                            <span style="color: var(--hp-text-muted); font-size: 0.85rem;">No hard skills detected</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="skills-section-group">
+                        <h4>Soft Skills ({{ analysis.detailed_results.skills_analysis.soft_skills_count if analysis.detailed_results and analysis.detailed_results.skills_analysis else 0 }})</h4>
+                        <div class="skills-tags">
+                            {% if analysis.detailed_results and analysis.detailed_results.skills_analysis and analysis.detailed_results.skills_analysis.soft_skills_found %}
+                                {% for skill in analysis.detailed_results.skills_analysis.soft_skills_found %}
+                                <span class="skill-tag">{{ skill }}</span>
+                                {% endfor %}
+                            {% else %}
+                            <span style="color: var(--hp-text-muted); font-size: 0.85rem;">No soft skills detected</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Match Card (if JD provided) -->
+            {% if analysis.job_description or analysis.detailed_results.job_match %}
+            <div class="detail-card job-match-card">
+                <div class="match-header">
+                    <h2 class="detail-card-title" style="margin: 0;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                        </svg>
+                        Job Match
+                    </h2>
+                    <span class="match-badge">Job Description</span>
+                </div>
+
+                {% if analysis.detailed_results.job_match %}
+                <div class="match-stats">
+                    <div class="match-stat">
+                        <div class="match-stat-value" style="color: {% if analysis.detailed_results.job_match.overall_match >= 70 %}var(--hp-success){% elif analysis.detailed_results.job_match.overall_match >= 50 %}var(--hp-accent){% else %}var(--hp-warning){% endif %}">{{ analysis.detailed_results.job_match.overall_match }}%</div>
+                        <div class="match-stat-label">Overall Match</div>
+                    </div>
+                    <div class="match-stat">
+                        <div class="match-stat-value" style="color: {% if analysis.detailed_results.job_match.hard_skill_match >= 70 %}var(--hp-success){% elif analysis.detailed_results.job_match.hard_skill_match >= 50 %}var(--hp-accent){% else %}var(--hp-warning){% endif %}">{{ analysis.detailed_results.job_match.hard_skill_match }}%</div>
+                        <div class="match-stat-label">Skills Match</div>
+                    </div>
+                </div>
+
+                {% if analysis.detailed_results.job_match.hard_skill_gaps or analysis.detailed_results.job_match.soft_skill_gaps %}
+                <div class="skill-gaps-title">Missing Skills</div>
+                <div class="gap-tags">
+                    {% for skill in analysis.detailed_results.job_match.hard_skill_gaps[:6] %}
+                    <span class="gap-tag">{{ skill }}</span>
+                    {% endfor %}
+                    {% for skill in analysis.detailed_results.job_match.soft_skill_gaps[:4] %}
+                    <span class="gap-tag">{{ skill }}</span>
+                    {% endfor %}
                 </div>
                 {% endif %}
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Tips Card -->
+            <div class="detail-card tips-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    Improvement Tips
+                </h2>
+
+                <div class="tips-list">
+                    {% if analysis.tips %}
+                        {% for tip in analysis.tips[:6] %}
+                        <div class="tip-item">
+                            <svg class="tip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                            <span class="tip-text">{{ tip }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="tip-item">
+                        <svg class="tip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                        <span class="tip-text">Your resume looks great! Keep it updated as you gain experience.</span>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -740,15 +1399,24 @@
 
 <script>
     // Animate score circle
-    const progressCircle = document.querySelector('.score-circle-large .progress');
+    const progressCircle = document.querySelector('.score-circle-container .progress');
     if (progressCircle) {
         const score = parseInt(progressCircle.dataset.score, 10);
-        const circumference = 2 * Math.PI * 60;
+        const circumference = 2 * Math.PI * 80;
         const offset = circumference - (score / 100) * circumference;
 
         setTimeout(() => {
             progressCircle.style.strokeDashoffset = offset;
-        }, 100);
+        }, 300);
     }
+
+    // Animate comparison bars
+    document.querySelectorAll('.comparison-bar-fill, .breakdown-bar-fill').forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 500);
+    });
 </script>
 {% endblock %}
