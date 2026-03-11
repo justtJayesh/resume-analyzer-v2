@@ -127,13 +127,13 @@ def delete_analysis(analysis_id):
         flash("Analysis deleted.", "success")
     else:
         flash("Could not delete analysis.", "error")
-    return redirect(url_for("home"))
+    return redirect(url_for("analysis"))
 
 
 @app.route("/home", methods=["GET", "POST"])
 @login_required
 def home():
-    """Home page - upload resume and view score/tips. Shows past analyses."""
+    """Home page - upload resume and view score/tips."""
     # Handle POST: file upload
     if request.method == "POST":
         if "resume" not in request.files:
@@ -155,41 +155,68 @@ def home():
             flash("Error reading file. Please try again.", "error")
             return redirect(url_for("home"))
 
-        # Get job description if provided
+        # Get job title and job description if provided
+        job_title = request.form.get("job_title", "").strip()
         job_description = request.form.get("job_description", "").strip()
 
         text = analyzer.extract_text_from_file(file_content, file.filename)
         score, tips, detailed_results = analyzer.analyze_resume(text, job_description if job_description else None)
 
         # Save analysis to database
-        database.add_analysis(session["user_id"], file.filename, score, tips, detailed_results)
+        database.add_analysis(
+            session["user_id"],
+            file.filename,
+            score,
+            tips,
+            detailed_results,
+            job_title if job_title else None,
+            job_description if job_description else None
+        )
 
         # Store results in session for PRG pattern
         session["last_analysis"] = {
             "filename": file.filename,
             "score": score,
             "tips": tips,
-            "detailed_results": detailed_results
+            "detailed_results": detailed_results,
+            "job_title": job_title if job_title else None
         }
 
         flash("Resume analyzed successfully!", "success")
         return redirect(url_for("home"))
 
-    # GET request: show page with analyses and any stored results
-    analyses = database.get_analyses_by_user(session["user_id"])
-
+    # GET request: show page with any stored results
     # Pop results from session if they exist (one-time display)
     last_analysis = session.pop("last_analysis", None)
 
     return render_template(
         "home.html",
-        analyses=analyses,
         last_filename=last_analysis["filename"] if last_analysis else None,
         last_score=last_analysis["score"] if last_analysis else None,
         last_tips=last_analysis["tips"] if last_analysis else None,
         last_detailed=last_analysis.get("detailed_results") if last_analysis else None,
+        last_job_title=last_analysis.get("job_title") if last_analysis else None,
     )
 
 
+@app.route("/analysis")
+@login_required
+def analysis():
+    """Analysis history page - shows all past analyses in a table."""
+    analyses = database.get_analyses_by_user(session["user_id"], limit=None)
+    return render_template("analysis.html", analyses=analyses)
+
+
+@app.route("/analysis/<int:analysis_id>")
+@login_required
+def analysis_detail(analysis_id):
+    """Analysis detail page - shows full details of a specific analysis."""
+    analysis = database.get_analysis_by_id(analysis_id, session["user_id"])
+    if not analysis:
+        flash("Analysis not found.", "error")
+        return redirect(url_for("analysis"))
+    return render_template("analysis_detail.html", analysis=analysis)
+
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)

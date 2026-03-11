@@ -208,6 +208,7 @@
                 {% if session.get('user_id') %}
                     <span class="nav-user">Hello, {{ session.username }}</span>
                     <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('analysis') }}" class="nav-link">Analyses</a>
                     <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
                 {% elif request.endpoint not in ['login', 'register'] %}
                     <a href="{{ url_for('login') }}" class="nav-link">Login</a>

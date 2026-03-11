@@ -42,6 +42,8 @@ def init_db():
             tips TEXT NOT NULL,
             detailed_results TEXT,
             uploaded_at TEXT NOT NULL,
+            job_title TEXT,
+            job_description TEXT,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     """)
@@ -51,6 +53,18 @@ def init_db():
         cursor.execute("SELECT detailed_results FROM analyses LIMIT 1")
     except sqlite3.OperationalError:
         cursor.execute("ALTER TABLE analyses ADD COLUMN detailed_results TEXT")
+
+    # Add job_title column if it doesn't exist (for existing databases)
+    try:
+        cursor.execute("SELECT job_title FROM analyses LIMIT 1")
+    except sqlite3.OperationalError:
+        cursor.execute("ALTER TABLE analyses ADD COLUMN job_title TEXT")
+
+    # Add job_description column if it doesn't exist (for existing databases)
+    try:
+        cursor.execute("SELECT job_description FROM analyses LIMIT 1")
+    except sqlite3.OperationalError:
+        cursor.execute("ALTER TABLE analyses ADD COLUMN job_description TEXT")
 
     conn.commit()
     conn.close()
@@ -112,11 +126,13 @@ def get_user_by_id(user_id):
         return dict(row) if row else None
 
 
-def add_analysis(user_id, filename, score, tips, detailed_results=None):
+def add_analysis(user_id, filename, score, tips, detailed_results=None, job_title=None, job_description=None):
     """
     Add a resume analysis record.
     tips should be a list of strings; we store as newline-separated text.
     detailed_results is a dict stored as JSON.
+    job_title is the selected job position.
+    job_description is the job description text used for matching.
     """
     tips_text = "\n".join(tips) if isinstance(tips, list) else tips
     detailed_json = json.dumps(detailed_results) if detailed_results else None
@@ -124,20 +140,26 @@ def add_analysis(user_id, filename, score, tips, detailed_results=None):
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO analyses (user_id, filename, score, tips, detailed_results, uploaded_at) VALUES (?, ?, ?, ?, ?, ?)",
-            (user_id, filename, score, tips_text, detailed_json, datetime.utcnow().isoformat())
+            "INSERT INTO analyses (user_id, filename, score, tips, detailed_results, uploaded_at, job_title, job_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (user_id, filename, score, tips_text, detailed_json, datetime.utcnow().isoformat(), job_title, job_description)
         )
         return cursor.lastrowid
 
 
 def get_analyses_by_user(user_id, limit=10):
-    """Get recent analyses for a user. Returns list of dicts."""
+    """Get analyses for a user. Set limit=None to get all records."""
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM analyses WHERE user_id = ? ORDER BY uploaded_at DESC LIMIT ?",
-            (user_id, limit)
-        )
+        if limit:
+            cursor.execute(
+                "SELECT * FROM analyses WHERE user_id = ? ORDER BY uploaded_at DESC LIMIT ?",
+                (user_id, limit)
+            )
+        else:
+            cursor.execute(
+                "SELECT * FROM analyses WHERE user_id = ? ORDER BY uploaded_at DESC",
+                (user_id,)
+            )
         rows = cursor.fetchall()
         result = []
         for row in rows:
@@ -157,3 +179,20 @@ def delete_analysis(analysis_id, user_id):
             (analysis_id, user_id)
         )
         return cursor.rowcount > 0
+
+
+def get_analysis_by_id(analysis_id, user_id):
+    """Get a single analysis by ID, verifying it belongs to the user. Returns None if not found."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM analyses WHERE id = ? AND user_id = ?",
+            (analysis_id, user_id)
+        )
+        row = cursor.fetchone()
+        if row:
+            d = dict(row)
+            d["tips"] = d["tips"].split("\n") if d["tips"] else []
+            d["detailed_results"] = json.loads(d["detailed_results"]) if d.get("detailed_results") else None
+            return d
+        return None

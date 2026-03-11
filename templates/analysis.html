@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% block title %}Your Analyses - CVNest{% endblock %}
+{% block head_extra %}
+<style>
+    .analysis-page {
+        --hp-accent: #0d9488;
+        --hp-accent-light: #14b8a6;
+        --hp-accent-soft: rgba(13, 148, 136, 0.08);
+        --hp-accent-subtle: rgba(13, 148, 136, 0.04);
+        --hp-surface: #ffffff;
+        --hp-surface-elevated: #fafafa;
+        --hp-bg: #f5f5f4;
+        --hp-border: rgba(0, 0, 0, 0.08);
+        --hp-text: #1a1a1a;
+        --hp-text-muted: #737373;
+        --hp-orange: #f97316;
+        --hp-orange-soft: rgba(249, 115, 22, 0.08);
+    }
+
+    .analysis-page .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 24px;
+        min-height: calc(100vh - 72px);
+    }
+
+    .page-header {
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--hp-text);
+        margin: 0 0 6px 0;
+    }
+
+    .page-subtitle {
+        font-size: 1rem;
+        color: var(--hp-text-muted);
+        margin: 0;
+    }
+
+    /* Table Card */
+    .table-card {
+        background: var(--hp-surface);
+        border: 1px solid var(--hp-border);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 14px 16px;
+        text-align: left;
+    }
+
+    th {
+        background: var(--hp-surface-elevated);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--hp-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    td {
+        border-bottom: 1px solid var(--hp-border);
+        font-size: 0.9rem;
+        color: var(--hp-text);
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    tbody tr:hover {
+        background: var(--hp-accent-subtle);
+    }
+
+    .file-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .file-icon {
+        width: 36px;
+        height: 36px;
+        background: var(--hp-accent-soft);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .file-icon svg {
+        width: 16px;
+        height: 16px;
+        color: var(--hp-accent);
+    }
+
+    .file-name {
+        font-weight: 600;
+    }
+
+    .file-date {
+        font-size: 0.8rem;
+        color: var(--hp-text-muted);
+    }
+
+    .job-title-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        background: var(--hp-accent-subtle);
+        color: var(--hp-accent);
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .score-badge {
+        font-family: 'Syne', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 16px;
+        display: inline-block;
+    }
+
+    .score-badge.excellent { background: rgba(5, 150, 105, 0.12); color: #059669; }
+    .score-badge.good { background: var(--hp-accent-soft); color: var(--hp-accent); }
+    .score-badge.average { background: var(--hp-orange-soft); color: #ea580c; }
+    .score-badge.needs-work { background: rgba(185, 28, 28, 0.1); color: #b91c1c; }
+
+    .actions-cell {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-view {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 14px;
+        background: var(--hp-accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-view:hover {
+        background: var(--hp-accent-light);
+    }
+
+    .btn-view svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .btn-delete {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: none;
+        border: 1px solid var(--hp-border);
+        border-radius: 8px;
+        cursor: pointer;
+        color: var(--hp-text-muted);
+        transition: all 0.15s ease;
+    }
+
+    .btn-delete:hover {
+        background: rgba(185, 28, 28, 0.1);
+        border-color: rgba(185, 28, 28, 0.3);
+        color: #dc2626;
+    }
+
+    .btn-delete svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 40px;
+        color: var(--hp-text-muted);
+    }
+
+    .empty-state svg {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 16px;
+        opacity: 0.4;
+    }
+
+    .empty-state h3 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--hp-text);
+        margin-bottom: 6px;
+    }
+
+    .empty-state p {
+        font-size: 0.9rem;
+        margin: 0 0 20px 0;
+    }
+
+    .empty-state .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        background: var(--hp-accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        th, td {
+            padding: 12px;
+        }
+
+        .file-icon {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analysis-page">
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Your Resume Analyses</h1>
+            <p class="page-subtitle">View and manage all your uploaded resumes</p>
+        </div>
+
+        {% if analyses and analyses|length > 0 %}
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Job Title</th>
+                        <th>Filename</th>
+                        <th>Score</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in analyses %}
+                    <tr>
+                        <td>
+                            <div class="file-cell">
+                                <div class="file-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="16" y1="2" x2="16" y2="6"/>
+                                        <line x1="8" y1="2" x2="8" y2="6"/>
+                                        <line x1="3" y1="10" x2="21" y2="10"/>
+                                    </svg>
+                                </div>
+                                <span class="file-date">{{ a.uploaded_at[:10] if a.uploaded_at else '' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if a.job_title %}
+                            <span class="job-title-badge">{{ a.job_title }}</span>
+                            {% else %}
+                            <span style="color: var(--hp-text-muted);">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="file-cell">
+                                <div class="file-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14 2 14 8 20 8"/>
+                                    </svg>
+                                </div>
+                                <span class="file-name">{{ a.filename }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="score-badge {% if a.score >= 80 %}excellent{% elif a.score >= 60 %}good{% elif a.score >= 40 %}average{% else %}needs-work{% endif %}">
+                                {{ a.score }}/100
+                            </span>
+                        </td>
+                        <td>
+                            <div class="actions-cell">
+                                <a href="{{ url_for('analysis_detail', analysis_id=a.id) }}" class="btn-view">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    View
+                                </a>
+                                <form method="POST" action="{{ url_for('delete_analysis', analysis_id=a.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn-delete" aria-label="Delete" onclick="return confirm('Delete this analysis?');">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="table-card">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="12" y1="18" x2="12" y2="12"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                <h3>No analyses yet</h3>
+                <p>Upload your first resume to get started.</p>
+                <a href="{{ url_for('home') }}" class="btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Upload Resume
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

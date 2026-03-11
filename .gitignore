@@ -8,3 +8,6 @@ instance/
 .agents
 .cursor/
 .DS_Store
+.memory/
+AGENTS
+skills-lock.json
