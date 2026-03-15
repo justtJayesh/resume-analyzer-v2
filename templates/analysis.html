@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Your Analyses - CVNest{% endblock %}
 {% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
     .analysis-page {
         --hp-accent: #0d9488;
@@ -26,6 +27,53 @@
 
     .page-header {
         margin-bottom: 32px;
+    }
+
+    /* Chart Section */
+    .chart-section {
+        background: var(--hp-surface);
+        border: 1px solid var(--hp-border);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        height: 40vh;
+        min-height: 280px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chart-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .chart-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--hp-text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chart-title svg {
+        width: 18px;
+        height: 18px;
+        color: var(--hp-accent);
+    }
+
+    .chart-subtitle {
+        font-size: 0.8rem;
+        color: var(--hp-text-muted);
+    }
+
+    .chart-container {
+        flex: 1;
+        position: relative;
+        width: 100%;
     }
 
     .page-title {
@@ -262,6 +310,113 @@
         </div>
 
         {% if analyses and analyses|length > 0 %}
+        <div class="chart-section">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    Score Trend
+                </div>
+                <span class="chart-subtitle">Performance over time</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+
+        <script>
+            (function() {
+                const analyses = {{ analyses|tojson }};
+                if (analyses && analyses.length > 0) {
+                    const sortedAnalyses = [...analyses].sort((a, b) =>
+                        new Date(a.uploaded_at) - new Date(b.uploaded_at)
+                    );
+                    const labels = sortedAnalyses.map(a => a.filename.length > 15 ? a.filename.substring(0, 12) + '...' : a.filename);
+                    const scores = sortedAnalyses.map(a => a.score);
+
+                    const ctx = document.getElementById('scoreChart').getContext('2d');
+                    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+                    gradient.addColorStop(0, 'rgba(13, 148, 136, 0.3)');
+                    gradient.addColorStop(1, 'rgba(13, 148, 136, 0.0)');
+
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Resume Score',
+                                data: scores,
+                                borderColor: '#0d9488',
+                                backgroundColor: gradient,
+                                borderWidth: 2.5,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#0d9488',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                                pointHoverRadius: 7
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: '#1a1a1a',
+                                    titleFont: { family: 'Syne', size: 13, weight: '600' },
+                                    bodyFont: { family: 'Inter', size: 12 },
+                                    padding: 12,
+                                    cornerRadius: 8,
+                                    displayColors: false,
+                                    callbacks: {
+                                        title: function(items) {
+                                            return sortedAnalyses[items[0].dataIndex].filename;
+                                        },
+                                        label: function(context) {
+                                            const analysis = sortedAnalyses[context.dataIndex];
+                                            return [
+                                                'Score: ' + context.raw + '/100',
+                                                'Job: ' + (analysis.job_title || 'N/A'),
+                                                'Date: ' + analysis.uploaded_at.substring(0, 10)
+                                            ];
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { display: false },
+                                    ticks: {
+                                        font: { family: 'Inter', size: 11 },
+                                        color: '#737373'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.05)'
+                                    },
+                                    ticks: {
+                                        font: { family: 'Inter', size: 11 },
+                                        color: '#737373',
+                                        stepSize: 20
+                                    }
+                                }
+                            },
+                            interaction: {
+                                intersect: false,
+                                mode: 'index'
+                            }
+                        }
+                    });
+                }
+            })();
+        </script>
+
         <div class="table-card">
             <table>
                 <thead>
