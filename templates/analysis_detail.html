@@ -3,31 +3,114 @@
 {% block head_extra %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     .detail-page {
-        --hp-bg: #f8f6f3;
+        /* Modern Ocean Theme */
+        --hp-bg: #f0f9ff;
         --hp-surface: #ffffff;
-        --hp-surface-elevated: #faf9f7;
-        --hp-text: #1a1a1a;
-        --hp-text-muted: #6b6b6b;
-        --hp-text-light: #9a9a9a;
-        --hp-accent: #0d7377;
-        --hp-accent-light: #14919b;
-        --hp-accent-soft: rgba(13, 115, 119, 0.1);
-        --hp-accent-subtle: rgba(13, 115, 119, 0.05);
-        --hp-border: rgba(0, 0, 0, 0.08);
-        --hp-border-light: rgba(0, 0, 0, 0.04);
+        --hp-surface-elevated: #f8fafc;
+        --hp-text: #0f172a;
+        --hp-text-muted: #475569;
+        --hp-text-light: #94a3b8;
+        --hp-accent: #0891b2;
+        --hp-accent-light: #06b6d4;
+        --hp-accent-soft: rgba(8, 145, 178, 0.1);
+        --hp-accent-subtle: rgba(8, 145, 178, 0.05);
+        --hp-border: rgba(15, 23, 42, 0.08);
+        --hp-border-light: rgba(15, 23, 42, 0.04);
         --hp-danger: #dc2626;
         --hp-danger-soft: rgba(220, 38, 38, 0.1);
         --hp-warning: #d97706;
         --hp-warning-soft: rgba(217, 119, 6, 0.1);
         --hp-success: #059669;
         --hp-success-soft: rgba(5, 150, 105, 0.1);
-        --hp-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-        --hp-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
-        --hp-font-display: 'Playfair Display', Georgia, serif;
+        --hp-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+        --hp-shadow-lg: 0 8px 40px rgba(15, 23, 42, 0.08);
+        --hp-font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
         --hp-font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Theme: Midnight (Dark) */
+    .detail-page.theme-midnight {
+        --hp-bg: #0f172a;
+        --hp-surface: #1e293b;
+        --hp-surface-elevated: #334155;
+        --hp-text: #f1f5f9;
+        --hp-text-muted: #94a3b8;
+        --hp-text-light: #64748b;
+        --hp-accent: #6366f1;
+        --hp-accent-light: #818cf8;
+        --hp-accent-soft: rgba(99, 102, 241, 0.15);
+        --hp-accent-subtle: rgba(99, 102, 241, 0.08);
+        --hp-border: rgba(241, 245, 249, 0.08);
+        --hp-border-light: rgba(241, 245, 249, 0.04);
+        --hp-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        --hp-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Theme: Sunset (Warm) */
+    .detail-page.theme-sunset {
+        --hp-bg: #fff7ed;
+        --hp-surface: #ffffff;
+        --hp-surface-elevated: #ffedd5;
+        --hp-text: #1c1917;
+        --hp-text-muted: #57534e;
+        --hp-text-light: #a8a29e;
+        --hp-accent: #ea580c;
+        --hp-accent-light: #f97316;
+        --hp-accent-soft: rgba(234, 88, 12, 0.1);
+        --hp-accent-subtle: rgba(234, 88, 12, 0.05);
+        --hp-border: rgba(28, 25, 23, 0.08);
+        --hp-border-light: rgba(28, 25, 23, 0.04);
+    }
+
+    /* Theme: Forest (Natural) */
+    .detail-page.theme-forest {
+        --hp-bg: #ecfdf5;
+        --hp-surface: #ffffff;
+        --hp-surface-elevated: #d1fae5;
+        --hp-text: #064e3b;
+        --hp-text-muted: #047857;
+        --hp-text-light: #6ee7b7;
+        --hp-accent: #059669;
+        --hp-accent-light: #10b981;
+        --hp-accent-soft: rgba(5, 150, 105, 0.1);
+        --hp-accent-subtle: rgba(5, 150, 105, 0.05);
+        --hp-border: rgba(6, 78, 59, 0.08);
+        --hp-border-light: rgba(6, 78, 59, 0.04);
+    }
+
+    /* Theme: Yellow (Bright) */
+    .detail-page.theme-yellow {
+        --hp-bg: #fefce8;
+        --hp-surface: #ffffff;
+        --hp-surface-elevated: #fef9c3;
+        --hp-text: #1f2937;
+        --hp-text-muted: #57534e;
+        --hp-text-light: #fde047;
+        --hp-accent: #eab308;
+        --hp-accent-light: #facc15;
+        --hp-accent-soft: rgba(234, 179, 8, 0.1);
+        --hp-accent-subtle: rgba(234, 179, 8, 0.05);
+        --hp-border: rgba(31, 41, 55, 0.08);
+        --hp-border-light: rgba(31, 41, 55, 0.04);
+    }
+
+    /* Theme: Yellow (Bright) */
+    .detail-page.theme-yellow {
+        --hp-bg: #fefce8;
+        --hp-surface: #ffffff;
+        --hp-surface-elevated: #fef08a;
+        --hp-text: #1c1917;
+        --hp-text-muted: #57534e;
+        --hp-text-light: #a8a29e;
+        --hp-accent: #eab308;
+        --hp-accent-light: #facc15;
+        --hp-accent-soft: rgba(234, 179, 8, 0.1);
+        --hp-accent-subtle: rgba(234, 179, 8, 0.05);
+        --hp-border: rgba(28, 25, 23, 0.08);
+        --hp-border-light: rgba(28, 25, 23, 0.04);
     }
 
     .detail-page .container {
@@ -60,6 +143,79 @@
     }
 
     /* Header */
+    /* Theme Selector */
+    .theme-selector {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: var(--hp-surface);
+        border: 1px solid var(--hp-border);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .theme-selector:hover {
+        border-color: var(--hp-accent);
+    }
+
+    .theme-selector-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--hp-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .theme-options {
+        display: flex;
+        gap: 6px;
+    }
+
+    .theme-option {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .theme-option:hover {
+        transform: scale(1.15);
+    }
+
+    .theme-option.active {
+        border-color: var(--hp-text);
+    }
+
+    .theme-option.ocean { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+    .theme-option.midnight { background: linear-gradient(135deg, #6366f1, #818cf8); }
+    .theme-option.sunset { background: linear-gradient(135deg, #ea580c, #f97316); }
+    .theme-option.forest { background: linear-gradient(135deg, #059669, #10b981); }
+    .theme-option.yellow { background: linear-gradient(135deg, #eab308, #facc15); }
+    .theme-option.yellow { background: linear-gradient(135deg, #eab308, #facc15); }
+
+    .theme-option::after {
+        content: attr(data-name);
+        position: absolute;
+        bottom: -24px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.625rem;
+        color: var(--hp-text-muted);
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+    }
+
+    .theme-option:hover::after {
+        opacity: 1;
+    }
+
     .detail-header {
         display: flex;
         align-items: center;
@@ -806,6 +962,155 @@
         line-height: 1.5;
     }
 
+    /* Feedback Card */
+    .feedback-card {
+        grid-column: span 12;
+    }
+
+    .feedback-display {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .feedback-display-stars {
+        display: flex;
+        gap: 4px;
+    }
+
+    .feedback-display-stars .star {
+        width: 24px;
+        height: 24px;
+        color: #d1d5db;
+    }
+
+    .feedback-display-stars .star.filled {
+        color: #f59e0b;
+    }
+
+    .feedback-display-comment {
+        font-size: 0.9rem;
+        color: var(--hp-text);
+        font-style: italic;
+        line-height: 1.5;
+    }
+
+    .feedback-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: var(--hp-surface);
+        border: 1px solid var(--hp-border);
+        border-radius: 24px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--hp-text-muted);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .feedback-toggle-btn:hover {
+        border-color: var(--hp-accent);
+        color: var(--hp-accent);
+        background: var(--hp-accent-soft);
+    }
+
+    .feedback-form-container {
+        display: none;
+        margin-top: 16px;
+    }
+
+    .feedback-form-container.open {
+        display: block;
+    }
+
+    .star-rating {
+        display: flex;
+        gap: 6px;
+        cursor: pointer;
+        margin-bottom: 12px;
+    }
+
+    .star-rating.readonly {
+        cursor: default;
+    }
+
+    .star-rating .star {
+        width: 32px;
+        height: 32px;
+        color: #d1d5db;
+        transition: color 0.15s ease;
+    }
+
+    .star-rating .star.filled {
+        color: #f59e0b;
+    }
+
+    .star-rating .star:hover {
+        color: #fbbf24;
+    }
+
+    .feedback-textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--hp-border);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        color: var(--hp-text);
+        resize: vertical;
+        min-height: 80px;
+        margin-bottom: 12px;
+        box-sizing: border-box;
+        background: var(--hp-surface);
+    }
+
+    .feedback-textarea:focus {
+        outline: none;
+        border-color: var(--hp-accent);
+    }
+
+    .feedback-submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        background: var(--hp-accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .feedback-submit:hover {
+        background: var(--hp-accent-light);
+    }
+
+    .feedback-submit:disabled {
+        background: var(--hp-text-muted);
+        cursor: not-allowed;
+    }
+
+    .feedback-thank-you {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 20px;
+        background: var(--hp-success-soft);
+        color: var(--hp-success);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .feedback-thank-you.visible {
+        display: inline-flex;
+    }
+
     /* Layout with Sidebar */
     .detail-layout {
         display: flex;
@@ -974,6 +1279,16 @@
                 </svg>
                 {{ analysis.score }}/100
             </span>
+            <div class="theme-selector" onclick="event.stopPropagation()">
+                <span class="theme-selector-label">Theme</span>
+                <div class="theme-options">
+                    <div class="theme-option ocean active" data-theme="" data-name="Ocean" onclick="setTheme('')"></div>
+                    <div class="theme-option midnight" data-theme="theme-midnight" data-name="Midnight" onclick="setTheme('theme-midnight')"></div>
+                    <div class="theme-option sunset" data-theme="theme-sunset" data-name="Sunset" onclick="setTheme('theme-sunset')"></div>
+                    <div class="theme-option forest" data-theme="theme-forest" data-name="Forest" onclick="setTheme('theme-forest')"></div>
+                    <div class="theme-option yellow" data-theme="theme-yellow" data-name="Yellow" onclick="setTheme('theme-yellow')"></div>
+                </div>
+            </div>
         </div>
 
         <div class="detail-layout">
@@ -1486,6 +1801,67 @@
                     {% endif %}
                 </div>
             </div>
+
+            <!-- Feedback Card -->
+            {% if analysis.feedback_rating is not none %}
+            <div class="detail-card feedback-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Your Feedback
+                </h2>
+                <div class="feedback-display">
+                    <div class="feedback-display-stars">
+                        {% for i in range(1, 6) %}
+                        <svg class="star {% if i <= analysis.feedback_rating %}filled{% endif %}" viewBox="0 0 24 24" fill="{% if i <= analysis.feedback_rating %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        {% endfor %}
+                    </div>
+                    {% if analysis.feedback_comment %}
+                    <p class="feedback-display-comment">"{{ analysis.feedback_comment }}"</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="detail-card feedback-card">
+                <h2 class="detail-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Rate This Analysis
+                </h2>
+                <button class="feedback-toggle-btn" id="feedbackToggleBtn" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Share your feedback
+                </button>
+                <div class="feedback-form-container" id="feedbackFormContainer">
+                    <form id="feedbackForm">
+                        <input type="hidden" name="analysis_id" value="{{ analysis.id }}">
+                        <div class="star-rating" id="starRating">
+                            {% for i in range(1, 6) %}
+                            <svg class="star" data-value="{{ i }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="rating" id="feedbackRatingInput" value="">
+                        <textarea class="feedback-textarea" name="comment" placeholder="Tell us more about your experience (optional)" maxlength="500"></textarea>
+                        <button type="submit" class="feedback-submit" id="feedbackSubmitBtn">Submit Feedback</button>
+                    </form>
+                </div>
+                <div class="feedback-thank-you" id="feedbackThankYou">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    Thanks for your feedback!
+                </div>
+            </div>
+            {% endif %}
         </div>
             </div>
 
@@ -1544,5 +1920,135 @@
             bar.style.width = width;
         }, 500);
     });
+
+    // Theme Selector
+    function setTheme(themeClass) {
+        const detailPage = document.querySelector('.detail-page');
+        const options = document.querySelectorAll('.theme-option');
+
+        // Remove all theme classes
+        detailPage.classList.remove('theme-midnight', 'theme-sunset', 'theme-forest', 'theme-yellow');
+
+        // Add selected theme class if not default (ocean)
+        if (themeClass) {
+            detailPage.classList.add(themeClass);
+        }
+
+        // Update active state
+        options.forEach(opt => {
+            opt.classList.remove('active');
+            if (opt.dataset.theme === themeClass) {
+                opt.classList.add('active');
+            }
+        });
+
+        // Save preference
+        localStorage.setItem('analysis-theme', themeClass);
+    }
+
+    // Load saved theme on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('analysis-theme');
+        if (savedTheme) {
+            setTheme(savedTheme);
+        }
+    });
+
+    // Feedback toggle
+    const feedbackToggleBtn = document.getElementById('feedbackToggleBtn');
+    const feedbackFormContainer = document.getElementById('feedbackFormContainer');
+    if (feedbackToggleBtn && feedbackFormContainer) {
+        feedbackToggleBtn.addEventListener('click', () => {
+            feedbackFormContainer.classList.toggle('open');
+        });
+    }
+
+    // Star rating interaction
+    const starRating = document.getElementById('starRating');
+    const ratingInput = document.getElementById('feedbackRatingInput');
+    if (starRating && ratingInput) {
+        const stars = starRating.querySelectorAll('.star');
+        let selectedRating = 0;
+
+        function setStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('filled');
+                    star.setAttribute('fill', 'currentColor');
+                } else {
+                    star.classList.remove('filled');
+                    star.setAttribute('fill', 'none');
+                }
+            });
+        }
+
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                selectedRating = parseInt(star.dataset.value, 10);
+                ratingInput.value = selectedRating;
+                setStars(selectedRating);
+            });
+
+            star.addEventListener('mouseenter', () => {
+                const val = parseInt(star.dataset.value, 10);
+                setStars(val);
+            });
+
+            star.addEventListener('mouseleave', () => {
+                setStars(selectedRating);
+            });
+        });
+
+        // Feedback form submit via AJAX
+        const feedbackForm = document.getElementById('feedbackForm');
+        const feedbackSubmitBtn = document.getElementById('feedbackSubmitBtn');
+        const feedbackThankYou = document.getElementById('feedbackThankYou');
+
+        if (feedbackForm) {
+            feedbackForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!ratingInput.value) {
+                    alert('Please select a star rating.');
+                    return;
+                }
+
+                feedbackSubmitBtn.disabled = true;
+                feedbackSubmitBtn.textContent = 'Submitting...';
+
+                const formData = new FormData(feedbackForm);
+
+                try {
+                    const response = await fetch('/feedback/' + formData.get('analysis_id'), {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                        return;
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        feedbackFormContainer.classList.remove('open');
+                        feedbackFormContainer.style.display = 'none';
+                        feedbackToggleBtn.style.display = 'none';
+                        if (feedbackThankYou) {
+                            feedbackThankYou.classList.add('visible');
+                        }
+                    } else {
+                        alert(data.error || 'Failed to submit feedback. Please try again.');
+                        feedbackSubmitBtn.disabled = false;
+                        feedbackSubmitBtn.textContent = 'Submit Feedback';
+                    }
+                } catch (err) {
+                    alert('Network error. Please try again.');
+                    feedbackSubmitBtn.disabled = false;
+                    feedbackSubmitBtn.textContent = 'Submit Feedback';
+                }
+            });
+        }
+    }
 </script>
 {% endblock %}

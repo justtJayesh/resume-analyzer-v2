@@ -66,6 +66,18 @@ def init_db():
     except sqlite3.OperationalError:
         cursor.execute("ALTER TABLE analyses ADD COLUMN job_description TEXT")
 
+    # Add feedback_rating column if it doesn't exist (for existing databases)
+    try:
+        cursor.execute("SELECT feedback_rating FROM analyses LIMIT 1")
+    except sqlite3.OperationalError:
+        cursor.execute("ALTER TABLE analyses ADD COLUMN feedback_rating INTEGER")
+
+    # Add feedback_comment column if it doesn't exist (for existing databases)
+    try:
+        cursor.execute("SELECT feedback_comment FROM analyses LIMIT 1")
+    except sqlite3.OperationalError:
+        cursor.execute("ALTER TABLE analyses ADD COLUMN feedback_comment TEXT")
+
     conn.commit()
     conn.close()
 
@@ -181,7 +193,7 @@ def delete_analysis(analysis_id, user_id):
         return cursor.rowcount > 0
 
 
-def get_analysis_by_id(analysis_id, user_id):
+def get_analysis_by_id(analysis_id: int, user_id: int) -> dict | None:
     """Get a single analysis by ID, verifying it belongs to the user. Returns None if not found."""
     with get_connection() as conn:
         cursor = conn.cursor()
@@ -196,3 +208,28 @@ def get_analysis_by_id(analysis_id, user_id):
             d["detailed_results"] = json.loads(d["detailed_results"]) if d.get("detailed_results") else None
             return d
         return None
+
+
+def update_feedback(analysis_id: int, user_id: int, rating: int, comment: str | None) -> bool:
+    """
+    Submit feedback for an analysis. Feedback can only be submitted once.
+    Returns True if successful.
+    Raises ValueError if feedback already exists.
+    """
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        # Check if feedback already exists
+        cursor.execute(
+            "SELECT feedback_rating FROM analyses WHERE id = ? AND user_id = ?",
+            (analysis_id, user_id)
+        )
+        row = cursor.fetchone()
+        if not row:
+            return False
+        if row["feedback_rating"] is not None:
+            raise ValueError("Feedback already submitted for this analysis.")
+        cursor.execute(
+            "UPDATE analyses SET feedback_rating = ?, feedback_comment = ? WHERE id = ? AND user_id = ?",
+            (rating, comment, analysis_id, user_id)
+        )
+        return cursor.rowcount > 0

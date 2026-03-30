@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import database
@@ -15,12 +15,14 @@ with app.app_context():
 
 
 def login_required(f):
-    """Decorator to require login for a route."""
+    """Decorator to require login for a route. Returns JSON 401 for AJAX requests."""
     from functools import wraps
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "user_id" not in session:
+            if request.headers.get("Content-Type") == "application/json" or request.is_json:
+                return jsonify({"success": False, "error": "Please log in to access this page."}), 401
             flash("Please log in to access this page.", "error")
             return redirect(url_for("login"))
         return f(*args, **kwargs)
@@ -130,6 +132,32 @@ def delete_analysis(analysis_id):
     return redirect(url_for("analysis"))
 
 
+@app.route("/feedback/<int:analysis_id>", methods=["POST"])
+@login_required
+def submit_feedback(analysis_id):
+    """Submit feedback (star rating + optional comment) for an analysis."""
+    rating_str = request.form.get("rating", "")
+    try:
+        rating = int(rating_str)
+        if rating < 1 or rating > 5:
+            return jsonify({"success": False, "error": "Rating must be between 1 and 5."}), 400
+    except (ValueError, TypeError):
+        return jsonify({"success": False, "error": "Invalid rating."}), 400
+
+    comment = request.form.get("comment", "").strip() or None
+
+    analysis = database.get_analysis_by_id(analysis_id, session["user_id"])
+    if not analysis:
+        return jsonify({"success": False, "error": "Analysis not found."}), 403
+
+    try:
+        database.update_feedback(analysis_id, session["user_id"], rating, comment)
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)}), 409
+
+    return jsonify({"success": True})
+
+
 @app.route("/home", methods=["GET", "POST"])
 @login_required
 def home():
@@ -163,7 +191,7 @@ def home():
         score, tips, detailed_results = analyzer.analyze_resume(text, job_description if job_description else None)
 
         # Save analysis to database
-        database.add_analysis(
+        analysis_id = database.add_analysis(
             session["user_id"],
             file.filename,
             score,
@@ -175,6 +203,7 @@ def home():
 
         # Store results in session for PRG pattern
         session["last_analysis"] = {
+            "id": analysis_id,
             "filename": file.filename,
             "score": score,
             "tips": tips,
@@ -190,8 +219,22 @@ def home():
     # Pop results from session if they exist (one-time display)
     last_analysis = session.pop("last_analysis", None)
 
+    # Check if feedback was already submitted for this analysis
+    last_analysis_id = last_analysis["id"] if last_analysis else None
+    last_analysis_feedback = None
+    if last_analysis_id:
+        # Fetch fresh from DB to get feedback status
+        db_analysis = database.get_analysis_by_id(last_analysis_id, session["user_id"])
+        if db_analysis:
+            last_analysis_feedback = {
+                "rating": db_analysis.get("feedback_rating"),
+                "comment": db_analysis.get("feedback_comment"),
+            }
+
     return render_template(
         "home.html",
+        last_analysis_id=last_analysis_id,
+        last_analysis_feedback=last_analysis_feedback,
         last_filename=last_analysis["filename"] if last_analysis else None,
         last_score=last_analysis["score"] if last_analysis else None,
         last_tips=last_analysis["tips"] if last_analysis else None,

@@ -665,6 +665,172 @@
             grid-template-columns: 1fr;
         }
     }
+
+    /* Feedback Section */
+    .feedback-section {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--hp-border);
+    }
+
+    .feedback-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: var(--hp-surface);
+        border: 1px solid var(--hp-border);
+        border-radius: 24px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--hp-text-muted);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .feedback-toggle-btn:hover {
+        border-color: var(--hp-accent);
+        color: var(--hp-accent);
+        background: var(--hp-accent-soft);
+    }
+
+    .feedback-toggle-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .feedback-form-container {
+        display: none;
+        margin-top: 16px;
+        padding: 24px;
+        background: var(--hp-surface);
+        border: 1px solid var(--hp-border);
+        border-radius: 12px;
+        max-width: 480px;
+    }
+
+    .feedback-form-container.open {
+        display: block;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .feedback-prompt {
+        font-family: var(--hp-font-display);
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--hp-text);
+        margin: 0 0 16px 0;
+    }
+
+    /* Star Rating */
+    .star-rating {
+        display: flex;
+        gap: 6px;
+        cursor: pointer;
+        margin-bottom: 16px;
+    }
+
+    .star-rating.readonly {
+        cursor: default;
+    }
+
+    .star-rating .star {
+        width: 32px;
+        height: 32px;
+        color: #d1d5db;
+        transition: color 0.15s ease;
+    }
+
+    .star-rating .star.filled {
+        color: #f59e0b;
+    }
+
+    .star-rating .star:hover {
+        color: #fbbf24;
+    }
+
+    .feedback-textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--hp-border);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        color: var(--hp-text);
+        resize: vertical;
+        min-height: 80px;
+        margin-bottom: 12px;
+        box-sizing: border-box;
+    }
+
+    .feedback-textarea:focus {
+        outline: none;
+        border-color: var(--hp-accent);
+        box-shadow: 0 0 0 3px var(--hp-accent-soft);
+    }
+
+    .feedback-textarea::placeholder {
+        color: var(--hp-text-muted);
+    }
+
+    .feedback-submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        background: var(--hp-accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .feedback-submit:hover {
+        background: var(--hp-accent-light);
+    }
+
+    .feedback-submit:disabled {
+        background: var(--hp-text-muted);
+        cursor: not-allowed;
+    }
+
+    .feedback-thank-you {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 20px;
+        background: var(--hp-success-soft);
+        color: var(--hp-success);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .feedback-thank-you.visible {
+        display: inline-flex;
+    }
+
+    .feedback-thank-you svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .feedback-already-submitted {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: var(--hp-text-muted);
+    }
+
+    .feedback-already-submitted .star {
+        width: 16px;
+        height: 16px;
+        color: #f59e0b;
+    }
 </style>
 {% endblock %}
 
@@ -702,7 +868,7 @@
                             </svg>
                         </button>
                     </div>
-                    <input type="file" id="resume" name="resume" accept=".pdf,.docx,.txt" required>
+                    <input type="file" id="resume" name="resume" accept=".pdf,.docx,.txt">
                 </div>
 
                 <div class="form-group">
@@ -1033,6 +1199,59 @@
                 </aside>
                 {% endif %}
             </div>
+
+            <!-- Feedback Section -->
+            <div class="feedback-section">
+                {% if last_analysis_feedback and last_analysis_feedback.rating is not none %}
+                <div class="feedback-already-submitted">
+                    Your feedback:
+                    <span class="star-rating readonly">
+                        {% for i in range(1, 6) %}
+                        <svg class="star {% if i <= last_analysis_feedback.rating %}filled{% endif %}" viewBox="0 0 24 24" fill="{% if i <= last_analysis_feedback.rating %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        {% endfor %}
+                    </span>
+                    {% if last_analysis_feedback.comment %}
+                    <span style="font-size: 0.8rem; color: var(--hp-text-muted);">"{{ last_analysis_feedback.comment[:50] }}{% if last_analysis_feedback.comment|length > 50 %}...{% endif %}"</span>
+                    {% endif %}
+                </div>
+                {% else %}
+                <button class="feedback-toggle-btn" id="feedbackToggleBtn" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Rate this analysis
+                </button>
+
+                <div class="feedback-form-container" id="feedbackFormContainer">
+                    <p class="feedback-prompt">How was this analysis?</p>
+                    <form id="feedbackForm">
+                        <input type="hidden" name="analysis_id" value="{{ last_analysis_id }}">
+                        <div class="star-rating" id="starRating">
+                            {% for i in range(1, 6) %}
+                            <svg class="star" data-value="{{ i }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="rating" id="feedbackRatingInput" value="">
+                        <textarea class="feedback-textarea" name="comment" id="feedbackComment" placeholder="Tell us more about your experience (optional)" maxlength="500"></textarea>
+                        <button type="submit" class="feedback-submit" id="feedbackSubmitBtn">
+                            Submit Feedback
+                        </button>
+                    </form>
+                </div>
+
+                <div class="feedback-thank-you" id="feedbackThankYou">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    Thanks for your feedback!
+                </div>
+                {% endif %}
+            </div>
         </div>
         {% endif %}
     </div>
@@ -1056,61 +1275,96 @@
 
     // Drag and drop
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        uploadZone.addEventListener(eventName, e => {
-            e.preventDefault();
-            e.stopPropagation();
-        });
+        if (uploadZone) {
+            uploadZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        }
     });
 
     ['dragenter', 'dragover'].forEach(eventName => {
-        uploadZone.addEventListener(eventName, () => {
-            uploadZone.classList.add('dragover');
-        });
+        if (uploadZone) {
+            uploadZone.addEventListener(eventName, () => {
+                uploadZone.classList.add('dragover');
+            });
+        }
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
-        uploadZone.addEventListener(eventName, () => {
-            uploadZone.classList.remove('dragover');
-        });
-    });
-
-    uploadZone.addEventListener('drop', e => {
-        const files = e.dataTransfer.files;
-        if (files.length) {
-            fileInput.files = files;
-            updateFileDisplay(files[0]);
+        if (uploadZone) {
+            uploadZone.addEventListener(eventName, () => {
+                uploadZone.classList.remove('dragover');
+            });
         }
     });
+
+    if (uploadZone) {
+        uploadZone.addEventListener('drop', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadZone.classList.remove('dragover');
+
+            let files = null;
+            try {
+                files = e.dataTransfer.files;
+            } catch (err) {
+                console.error('Drop error:', err);
+                return;
+            }
+
+            if (files && files.length > 0) {
+                try {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(files[0]);
+                    fileInput.files = dataTransfer.files;
+                    updateFileDisplay(files[0]);
+                } catch (err) {
+                    console.error('File assign error:', err);
+                }
+            }
+        });
+    }
 
     // Click to browse
-    uploadZone.addEventListener('click', e => {
-        if (e.target !== clearFile && !clearFile.contains(e.target)) {
+    if (uploadZone && fileInput) {
+        uploadZone.addEventListener('click', e => {
+            // Don't trigger if clicking clear button or the file input itself
+            if (clearFile && (e.target === clearFile || clearFile.contains(e.target))) return;
+            if (e.target === fileInput || fileInput.contains(e.target)) return;
             fileInput.click();
-        }
-    });
+        });
+    }
 
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length) {
-            updateFileDisplay(fileInput.files[0]);
-        }
-    });
+    if (fileInput) {
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files && fileInput.files.length > 0) {
+                updateFileDisplay(fileInput.files[0]);
+            }
+        });
+    }
 
     function updateFileDisplay(file) {
+        if (!file || !fileName || !fileSelected) return;
         fileName.textContent = file.name;
         fileSelected.classList.add('visible');
     }
 
     // Clear file
-    clearFile.addEventListener('click', e => {
-        e.stopPropagation();
-        fileInput.value = '';
-        fileSelected.classList.remove('visible');
-    });
+    if (clearFile) {
+        clearFile.addEventListener('click', e => {
+            e.stopPropagation();
+            fileInput.value = '';
+            if (fileSelected) fileSelected.classList.remove('visible');
+        });
+    }
 
     // Form submission
-    uploadForm.addEventListener('submit', () => {
-        analyzingOverlay.classList.add('active');
-    });
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', () => {
+            if (analyzingOverlay) analyzingOverlay.classList.add('active');
+        });
+    }
 
     // Animate score circle
     const progressCircle = document.querySelector('.score-circle .progress');
@@ -1122,6 +1376,103 @@
         setTimeout(() => {
             progressCircle.style.strokeDashoffset = offset;
         }, 100);
+    }
+
+    // Feedback toggle
+    const feedbackToggleBtn = document.getElementById('feedbackToggleBtn');
+    const feedbackFormContainer = document.getElementById('feedbackFormContainer');
+    if (feedbackToggleBtn && feedbackFormContainer) {
+        feedbackToggleBtn.addEventListener('click', () => {
+            feedbackFormContainer.classList.toggle('open');
+        });
+    }
+
+    // Star rating interaction
+    const starRating = document.getElementById('starRating');
+    const ratingInput = document.getElementById('feedbackRatingInput');
+    if (starRating && ratingInput) {
+        const stars = starRating.querySelectorAll('.star');
+        let selectedRating = 0;
+
+        function setStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('filled');
+                    star.setAttribute('fill', 'currentColor');
+                } else {
+                    star.classList.remove('filled');
+                    star.setAttribute('fill', 'none');
+                }
+            });
+        }
+
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                selectedRating = parseInt(star.dataset.value, 10);
+                ratingInput.value = selectedRating;
+                setStars(selectedRating);
+            });
+
+            star.addEventListener('mouseenter', () => {
+                const val = parseInt(star.dataset.value, 10);
+                setStars(val);
+            });
+
+            star.addEventListener('mouseleave', () => {
+                setStars(selectedRating);
+            });
+        });
+
+        // Feedback form submit via AJAX
+        const feedbackForm = document.getElementById('feedbackForm');
+        const feedbackSubmitBtn = document.getElementById('feedbackSubmitBtn');
+        const feedbackThankYou = document.getElementById('feedbackThankYou');
+
+        if (feedbackForm) {
+            feedbackForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!ratingInput.value) {
+                    alert('Please select a star rating.');
+                    return;
+                }
+
+                feedbackSubmitBtn.disabled = true;
+                feedbackSubmitBtn.textContent = 'Submitting...';
+
+                const formData = new FormData(feedbackForm);
+
+                try {
+                    const response = await fetch('/feedback/' + formData.get('analysis_id'), {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                        return;
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        feedbackFormContainer.classList.remove('open');
+                        feedbackFormContainer.style.display = 'none';
+                        feedbackToggleBtn.style.display = 'none';
+                        if (feedbackThankYou) {
+                            feedbackThankYou.classList.add('visible');
+                        }
+                    } else {
+                        alert(data.error || 'Failed to submit feedback. Please try again.');
+                        feedbackSubmitBtn.disabled = false;
+                        feedbackSubmitBtn.textContent = 'Submit Feedback';
+                    }
+                } catch (err) {
+                    alert('Network error. Please try again.');
+                    feedbackSubmitBtn.disabled = false;
+                    feedbackSubmitBtn.textContent = 'Submit Feedback';
+                }
+            });
+        }
     }
 })();
 </script>
