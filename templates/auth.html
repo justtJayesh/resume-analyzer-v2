@@ -29,6 +29,9 @@
     --auth-primary: #0d9488;
     --auth-primary-dark: #0f766e;
     --auth-primary-glow: rgba(13, 148, 136, 0.28);
+    --auth-input-focus-surface: rgba(13, 148, 136, 0.055);
+    --auth-input-focus-ring: rgba(13, 148, 136, 0.16);
+    --auth-input-focus-shadow: rgba(13, 148, 136, 0.09);
     --auth-accent: #b45309;
     --auth-bg: #faf8f5;
     --auth-bg-warm: #f5f1eb;
@@ -122,7 +125,7 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 380px;
+    max-width: 400px;
     animation: authContentEnter 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
@@ -175,11 +178,12 @@
   .auth-form.active .auth-form-title { opacity: 0; animation: authReveal 0.4s ease forwards; }
   .auth-form.active .auth-form-subtitle { opacity: 0; animation: authReveal 0.4s 0.04s ease forwards; animation-fill-mode: forwards; }
   .auth-form.active .input-wrap { opacity: 0; animation: authReveal 0.4s ease forwards; animation-fill-mode: forwards; }
-  .auth-form.active .input-wrap:nth-of-type(1) { animation-delay: 0.06s; }
-  .auth-form.active .input-wrap:nth-of-type(2) { animation-delay: 0.1s; }
-  .auth-form.active .input-wrap:nth-of-type(3) { animation-delay: 0.14s; }
-  .auth-form.active .input-wrap:nth-of-type(4) { animation-delay: 0.18s; }
-  .auth-form.active .input-wrap:nth-of-type(5) { animation-delay: 0.2s; }
+  #login-form.auth-form.active .auth-field-group .input-wrap:nth-child(2) { animation-delay: 0.06s; }
+  #login-form.auth-form.active .auth-field-group .input-wrap:nth-child(3) { animation-delay: 0.1s; }
+  #register-form.auth-form.active .auth-field-group:nth-child(1) .input-wrap:nth-child(1) { animation-delay: 0.06s; }
+  #register-form.auth-form.active .auth-field-group:nth-child(1) .input-wrap:nth-child(2) { animation-delay: 0.1s; }
+  #register-form.auth-form.active .auth-field-group:nth-child(2) .input-wrap:nth-child(1) { animation-delay: 0.14s; }
+  #register-form.auth-form.active .auth-field-group:nth-child(2) .input-wrap:nth-child(2) { animation-delay: 0.18s; }
   .auth-form.active .auth-options { opacity: 0; animation: authReveal 0.4s 0.2s ease forwards; animation-fill-mode: forwards; }
   .auth-form.active .auth-btn-primary { opacity: 0; animation: authReveal 0.4s 0.24s ease forwards; animation-fill-mode: forwards; }
   .auth-form.active .auth-footer-text { opacity: 0; animation: authReveal 0.4s 0.28s ease forwards; animation-fill-mode: forwards; }
@@ -204,6 +208,114 @@
     color: var(--auth-text-muted);
   }
 
+  /* Auth card shell — register + login: grouped fields, editorial accent */
+  #register-form.auth-form-register,
+  #login-form.auth-form-login {
+    position: relative;
+    gap: 0;
+    padding: var(--space-24) var(--space-20) var(--space-20);
+    padding-left: calc(var(--space-20) + 6px);
+    border-radius: 14px;
+    border: 1px solid rgba(231, 229, 228, 0.95);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.97) 0%, #fff 42%, rgba(250, 248, 245, 0.85) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 14px 44px -12px rgba(28, 25, 23, 0.1),
+      0 0 0 1px rgba(13, 148, 136, 0.05);
+  }
+
+  #register-form.auth-form-register::before,
+  #login-form.auth-form-login::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 22px;
+    bottom: 22px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: linear-gradient(180deg, var(--auth-primary) 0%, var(--auth-primary-dark) 100%);
+    box-shadow: 2px 0 12px rgba(13, 148, 136, 0.25);
+  }
+
+  .auth-form-register-header {
+    margin-bottom: var(--space-20);
+    padding-bottom: var(--space-16);
+    border-bottom: 1px solid rgba(231, 229, 228, 0.85);
+  }
+
+  #register-form.auth-form-register .auth-form-title,
+  #login-form.auth-form-login .auth-form-title {
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+
+  #register-form.auth-form-register .auth-form-subtitle,
+  #login-form.auth-form-login .auth-form-subtitle {
+    margin-bottom: 0;
+    line-height: 1.55;
+    max-width: 34ch;
+  }
+
+  .auth-form-register-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-20);
+  }
+
+  .auth-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+  }
+
+  .auth-field-group-heading {
+    margin: 0;
+    font-family: var(--auth-display);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--auth-text-muted);
+  }
+
+  #register-form.auth-form-register .input-wrap input,
+  #login-form.auth-form-login .input-wrap input {
+    background: rgba(247, 246, 244, 0.98);
+    border-color: rgba(220, 218, 216, 0.95);
+  }
+
+  #register-form.auth-form-register .input-wrap input:focus,
+  #login-form.auth-form-login .input-wrap input:focus {
+    background-color: var(--auth-input-focus-surface);
+  }
+
+  #login-form.auth-form-login .auth-options {
+    margin-top: var(--space-12);
+  }
+
+  .auth-form-register-actions {
+    margin-top: var(--space-8);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  #register-form.auth-form-register .auth-btn-primary,
+  #login-form.auth-form-login .auth-btn-primary {
+    margin-top: var(--space-4);
+    padding: 14px 18px;
+    border-radius: 11px;
+  }
+
+  #register-form.auth-form-register .auth-footer-text,
+  #login-form.auth-form-login .auth-footer-text {
+    margin-top: var(--space-16);
+    padding-top: var(--space-16);
+    border-top: 1px solid rgba(231, 229, 228, 0.85);
+  }
+
   .input-wrap {
     position: relative;
   }
@@ -218,17 +330,34 @@
     font-size: 0.9375rem;
     color: var(--auth-text);
     background: #fff;
-    transition: border-color var(--transition), box-shadow var(--transition);
+    caret-color: var(--auth-primary);
+    transition:
+      border-color var(--transition),
+      background-color var(--transition),
+      box-shadow var(--transition);
   }
 
   .input-wrap input::placeholder {
     color: transparent;
   }
 
+  /* Focus: soft teal surface + halo ring + depth — matches auth palette */
   .input-wrap input:focus {
     outline: none;
     border-color: var(--auth-primary);
-    box-shadow: 0 0 0 3px var(--auth-primary-glow);
+    background-color: var(--auth-input-focus-surface);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.92),
+      0 0 0 4px var(--auth-input-focus-ring),
+      0 10px 28px -6px var(--auth-input-focus-shadow);
+  }
+
+  /* Keyboard: slightly wider ring for visibility */
+  .input-wrap input:focus-visible {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.92),
+      0 0 0 5px rgba(13, 148, 136, 0.22),
+      0 10px 28px -6px var(--auth-input-focus-shadow);
   }
 
   .input-wrap label {
@@ -248,6 +377,8 @@
     transform: translateY(0);
     font-size: 0.6875rem;
     color: var(--auth-primary);
+    font-weight: 600;
+    letter-spacing: 0.04em;
   }
 
   .auth-btn-primary {
@@ -419,6 +550,13 @@
     .auth-panel {
       padding: var(--space-16);
     }
+
+    #register-form.auth-form-register,
+    #login-form.auth-form-login {
+      padding: var(--space-20) var(--space-16);
+      padding-left: calc(var(--space-16) + 6px);
+      border-radius: 12px;
+    }
   }
 </style>
 
@@ -440,16 +578,23 @@
         {% endfor %}
       {% endif %}
 
-      <form id="login-form" method="post" action="{{ url_for('login') }}" class="auth-form active" role="tabpanel" aria-labelledby="tab-login">
-        <h2 class="auth-form-title">Welcome back</h2>
-        <p class="auth-form-subtitle">Sign in to continue to CVNest.</p>
-        <div class="input-wrap">
-          <input type="text" id="login-username" name="username" required placeholder=" " autocomplete="username">
-          <label for="login-username">Username</label>
-        </div>
-        <div class="input-wrap">
-          <input type="password" id="login-password" name="password" required placeholder=" " autocomplete="current-password">
-          <label for="login-password">Password</label>
+      <form id="login-form" method="post" action="{{ url_for('login') }}" class="auth-form auth-form-login active" role="tabpanel" aria-labelledby="tab-login">
+        <header class="auth-form-register-header">
+          <h2 class="auth-form-title">Welcome back</h2>
+          <p class="auth-form-subtitle">Sign in to continue to CVNest.</p>
+        </header>
+        <div class="auth-form-register-body">
+          <div class="auth-field-group" role="group" aria-labelledby="login-group-credentials">
+            <h3 id="login-group-credentials" class="auth-field-group-heading">Credentials</h3>
+            <div class="input-wrap">
+              <input type="text" id="login-username" name="username" required placeholder=" " autocomplete="username">
+              <label for="login-username">Username</label>
+            </div>
+            <div class="input-wrap">
+              <input type="password" id="login-password" name="password" required placeholder=" " autocomplete="current-password">
+              <label for="login-password">Password</label>
+            </div>
+          </div>
         </div>
         <div class="auth-options">
           <label>
@@ -458,7 +603,9 @@
           </label>
           <a href="#" class="auth-link">Forgot password?</a>
         </div>
-        <button type="submit" class="auth-btn-primary">Login</button>
+        <div class="auth-form-register-actions">
+          <button type="submit" class="auth-btn-primary">Login</button>
+        </div>
         <!-- <div class="auth-divider"><span>or continue with</span></div> -->
         <!-- <div class="auth-social">
           <a href="#" class="auth-social-btn" aria-label="Sign in with Google">
@@ -480,26 +627,38 @@
         <p class="auth-footer-text">Don't have an account? <a href="{{ url_for('register') }}" data-tab="register">Register</a></p>
       </form>
 
-      <form id="register-form" method="post" action="{{ url_for('register') }}" class="auth-form" role="tabpanel" aria-labelledby="tab-register" aria-hidden="true">
-        <h2 class="auth-form-title">Create account</h2>
-        <p class="auth-form-subtitle">Join CVNest to analyze and improve your resume.</p>
-        <div class="input-wrap">
-          <input type="text" id="reg-username" name="username" required placeholder=" " autocomplete="username">
-          <label for="reg-username">Username</label>
+      <form id="register-form" method="post" action="{{ url_for('register') }}" class="auth-form auth-form-register" role="tabpanel" aria-labelledby="tab-register" aria-hidden="true">
+        <header class="auth-form-register-header">
+          <h2 class="auth-form-title">Create account</h2>
+          <p class="auth-form-subtitle">Join CVNest to analyze and improve your resume.</p>
+        </header>
+        <div class="auth-form-register-body">
+          <div class="auth-field-group" role="group" aria-labelledby="reg-group-profile">
+            <h3 id="reg-group-profile" class="auth-field-group-heading">Profile</h3>
+            <div class="input-wrap">
+              <input type="text" id="reg-username" name="username" required placeholder=" " autocomplete="username">
+              <label for="reg-username">Username</label>
+            </div>
+            <div class="input-wrap">
+              <input type="email" id="reg-email" name="email" required placeholder=" " autocomplete="email">
+              <label for="reg-email">Email</label>
+            </div>
+          </div>
+          <div class="auth-field-group" role="group" aria-labelledby="reg-group-security">
+            <h3 id="reg-group-security" class="auth-field-group-heading">Security</h3>
+            <div class="input-wrap">
+              <input type="password" id="reg-password" name="password" required placeholder=" " autocomplete="new-password" minlength="4">
+              <label for="reg-password">Password (min 4 characters)</label>
+            </div>
+            <div class="input-wrap">
+              <input type="password" id="reg-confirm" name="confirm" required placeholder=" " autocomplete="new-password">
+              <label for="reg-confirm">Confirm password</label>
+            </div>
+          </div>
         </div>
-        <div class="input-wrap">
-          <input type="email" id="reg-email" name="email" required placeholder=" " autocomplete="email">
-          <label for="reg-email">Email</label>
+        <div class="auth-form-register-actions">
+          <button type="submit" class="auth-btn-primary">Register</button>
         </div>
-        <div class="input-wrap">
-          <input type="password" id="reg-password" name="password" required placeholder=" " autocomplete="new-password" minlength="4">
-          <label for="reg-password">Password (min 4 characters)</label>
-        </div>
-        <div class="input-wrap">
-          <input type="password" id="reg-confirm" name="confirm" required placeholder=" " autocomplete="new-password">
-          <label for="reg-confirm">Confirm password</label>
-        </div>
-        <button type="submit" class="auth-btn-primary">Register</button>
         <!-- <div class="auth-divider"><span>or continue with</span></div>
         <div class="auth-social">
           <a href="#" class="auth-social-btn" aria-label="Sign up with Google">
