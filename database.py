@@ -3,7 +3,7 @@
 import sqlite3
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from contextlib import contextmanager
 
 # Database path - Flask instance folder
@@ -90,6 +90,9 @@ def get_connection():
     try:
         yield conn
         conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 
@@ -104,7 +107,7 @@ def add_user(username, email, password_hash):
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO users (username, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
-                (username, email, password_hash, datetime.utcnow().isoformat())
+                (username, email, password_hash, datetime.now(timezone.utc).isoformat())
             )
             return cursor.lastrowid
     except sqlite3.IntegrityError:
@@ -153,7 +156,7 @@ def add_analysis(user_id, filename, score, tips, detailed_results=None, job_titl
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO analyses (user_id, filename, score, tips, detailed_results, uploaded_at, job_title, job_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (user_id, filename, score, tips_text, detailed_json, datetime.utcnow().isoformat(), job_title, job_description)
+            (user_id, filename, score, tips_text, detailed_json, datetime.now(timezone.utc).isoformat(), job_title, job_description)
         )
         return cursor.lastrowid
 
