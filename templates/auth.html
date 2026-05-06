@@ -579,6 +579,7 @@
       {% endif %}
 
       <form id="login-form" method="post" action="{{ url_for('login') }}" class="auth-form auth-form-login active" role="tabpanel" aria-labelledby="tab-login">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <header class="auth-form-register-header">
           <h2 class="auth-form-title">Welcome back</h2>
           <p class="auth-form-subtitle">Sign in to continue to CVNest.</p>
@@ -628,6 +629,7 @@
       </form>
 
       <form id="register-form" method="post" action="{{ url_for('register') }}" class="auth-form auth-form-register" role="tabpanel" aria-labelledby="tab-register" aria-hidden="true">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <header class="auth-form-register-header">
           <h2 class="auth-form-title">Create account</h2>
           <p class="auth-form-subtitle">Join CVNest to analyze and improve your resume.</p>

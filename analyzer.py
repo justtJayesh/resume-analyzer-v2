@@ -193,37 +193,30 @@ def _has_bullet_points(text):
     return False
 
 
+_SPECIAL_SKILL_CHARS = re.compile(r'[+#./]')
+
+
+def _skill_match(skill: str, text_lower: str) -> bool:
+    """Word-boundary match for alpha skills; exact substring for skills with special chars."""
+    if _SPECIAL_SKILL_CHARS.search(skill):
+        return skill in text_lower
+    return bool(re.search(rf'\b{re.escape(skill)}\b', text_lower))
+
+
 def _count_action_verbs(text_lower):
     """Count how many action verbs appear in the text."""
-    count = 0
-    for verb in ACTION_VERBS:
-        if verb in text_lower:
-            count += 1
-    return count
+    return sum(1 for verb in ACTION_VERBS if _skill_match(verb, text_lower))
 
 
 def _count_resume_keywords(text_lower):
     """Count how many resume keywords appear in the text."""
-    count = 0
-    for keyword in RESUME_KEYWORDS:
-        if keyword in text_lower:
-            count += 1
-    return count
+    return sum(1 for kw in RESUME_KEYWORDS if _skill_match(kw, text_lower))
 
 
 def _extract_skills(text_lower) -> Tuple[List[str], List[str]]:
     """Extract hard and soft skills from text."""
-    found_hard = []
-    found_soft = []
-
-    for skill in HARD_SKILLS:
-        if skill in text_lower:
-            found_hard.append(skill)
-
-    for skill in SOFT_SKILLS:
-        if skill in text_lower:
-            found_soft.append(skill)
-
+    found_hard = [s for s in HARD_SKILLS if _skill_match(s, text_lower)]
+    found_soft = [s for s in SOFT_SKILLS if _skill_match(s, text_lower)]
     return found_hard, found_soft
 
 
