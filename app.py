@@ -1,6 +1,8 @@
 import os
+import re
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import database
@@ -8,6 +10,7 @@ import analyzer
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
+csrf = CSRFProtect(app)
 # Limit uploads to 5 MB to prevent memory exhaustion
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
@@ -78,13 +81,12 @@ def register():
     password = request.form.get("password", "")
     confirm = request.form.get("confirm", "")
 
-    import re as _re
     errors = []
     if not username:
         errors.append("Username is required.")
     if not email:
         errors.append("Email is required.")
-    elif not _re.match(r"[^@]+@[^@]+\.[^@]+", email):
+    elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
         errors.append("Enter a valid email address.")
     if not password:
         errors.append("Password is required.")
@@ -242,7 +244,7 @@ def home():
 @login_required
 def analysis():
     """Analysis history page - shows all past analyses in a table."""
-    analyses = database.get_analyses_by_user(session["user_id"], limit=None)
+    analyses = database.get_analyses_by_user(session["user_id"], limit=50)
     return render_template("analysis.html", analyses=analyses)
 
 
