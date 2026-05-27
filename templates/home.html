@@ -845,7 +845,7 @@
         <!-- Upload Card -->
         <div class="card">
             <form method="POST" action="{{ url_for('home') }}" enctype="multipart/form-data" class="upload-form" id="uploadForm">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="upload-zone" id="uploadZone">
                     <div class="upload-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1447,9 +1447,7 @@
                 try {
                     const response = await fetch('/feedback/' + formData.get('analysis_id'), {
                         method: 'POST',
-                        headers: {
-                            'X-CSRF-Token': csrfToken
-                        },
+                        headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
                         body: formData,
                     });
 

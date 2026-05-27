@@ -2022,9 +2022,7 @@
                 try {
                     const response = await fetch('/feedback/' + formData.get('analysis_id'), {
                         method: 'POST',
-                        headers: {
-                            'X-CSRF-Token': csrfToken
-                        },
+                        headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content},
                         body: formData,
                     });
 

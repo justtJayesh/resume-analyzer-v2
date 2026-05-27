@@ -1,7 +1,9 @@
-import json
 import os
 import secrets
+import re
+from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import database
@@ -51,7 +53,6 @@ def validate_csrf():
 
 def login_required(f):
     """Decorator to require login for a route. Returns JSON 401 for AJAX requests."""
-    from functools import wraps
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -117,12 +118,14 @@ def register():
         errors.append("Username is required.")
     if not email:
         errors.append("Email is required.")
+    elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        errors.append("Enter a valid email address.")
     if not password:
         errors.append("Password is required.")
     if password != confirm:
         errors.append("Passwords do not match.")
-    if len(password) < 4:
-        errors.append("Password must be at least 4 characters.")
+    if len(password) < 8:
+        errors.append("Password must be at least 8 characters.")
 
     if errors:
         for err in errors:
@@ -237,34 +240,24 @@ def home():
             job_description if job_description else None
         )
 
-        # Store results in session for PRG pattern
-        session["last_analysis"] = {
-            "id": analysis_id,
-            "filename": file.filename,
-            "score": score,
-            "tips": tips,
-            "detailed_results": detailed_results,
-            "job_title": job_title if job_title else None,
-            "job_description": job_description if job_description else None
-        }
+        # Store only the ID in session (PRG pattern) — full data re-fetched from DB on GET
+        # Avoids storing large detailed_results dict in the 4KB cookie limit
+        session["last_analysis_id"] = analysis_id
 
         flash("Resume analyzed successfully!", "success")
         return redirect(url_for("home", _anchor="analysis-results"))
 
-    # GET request: show page with any stored results
-    # Pop results from session if they exist (one-time display)
-    last_analysis = session.pop("last_analysis", None)
-
-    # Check if feedback was already submitted for this analysis
-    last_analysis_id = last_analysis["id"] if last_analysis else None
+    # GET request: re-fetch analysis from DB using stored ID
+    last_analysis_id = session.pop("last_analysis_id", None)
+    last_analysis = None
     last_analysis_feedback = None
+
     if last_analysis_id:
-        # Fetch fresh from DB to get feedback status
-        db_analysis = database.get_analysis_by_id(last_analysis_id, session["user_id"])
-        if db_analysis:
+        last_analysis = database.get_analysis_by_id(last_analysis_id, session["user_id"])
+        if last_analysis:
             last_analysis_feedback = {
-                "rating": db_analysis.get("feedback_rating"),
-                "comment": db_analysis.get("feedback_comment"),
+                "rating": last_analysis.get("feedback_rating"),
+                "comment": last_analysis.get("feedback_comment"),
             }
 
     return render_template(
@@ -284,7 +277,7 @@ def home():
 @login_required
 def analysis():
     """Analysis history page - shows all past analyses in a table."""
-    analyses = database.get_analyses_by_user(session["user_id"], limit=None)
+    analyses = database.get_analyses_by_user(session["user_id"], limit=50)
     return render_template("analysis.html", analyses=analyses)
 
 
