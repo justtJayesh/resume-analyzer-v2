@@ -1840,6 +1840,7 @@
                 </button>
                 <div class="feedback-form-container" id="feedbackFormContainer">
                     <form id="feedbackForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                         <input type="hidden" name="analysis_id" value="{{ analysis.id }}">
                         <div class="star-rating" id="starRating">
                             {% for i in range(1, 6) %}
@@ -1900,6 +1901,7 @@
 </div>
 
 <script>
+    const csrfToken = '{{ csrf_token }}';
     // Animate score circle
     const progressCircle = document.querySelector('.score-circle-container .progress');
     if (progressCircle) {

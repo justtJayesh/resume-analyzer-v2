@@ -1228,6 +1228,7 @@
                 <div class="feedback-form-container" id="feedbackFormContainer">
                     <p class="feedback-prompt">How was this analysis?</p>
                     <form id="feedbackForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                         <input type="hidden" name="analysis_id" value="{{ last_analysis_id }}">
                         <div class="star-rating" id="starRating">
                             {% for i in range(1, 6) %}
@@ -1266,6 +1267,7 @@
 
 <script>
 (function() {
+    const csrfToken = '{{ csrf_token }}';
     const uploadZone = document.getElementById('uploadZone');
     const fileInput = document.getElementById('resume');
     const fileSelected = document.getElementById('fileSelected');
