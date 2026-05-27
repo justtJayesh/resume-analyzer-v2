@@ -1,9 +1,8 @@
 """Tests for the database module."""
 
 import pytest
-import os
-import tempfile
 import database
+from datetime import datetime, timezone, timedelta
 
 
 class TestDatabase:
@@ -102,6 +101,58 @@ class TestDatabase:
         analysis = database.get_analysis_by_id(analysis_id, user_id)
         assert analysis["feedback_rating"] == 5
         assert analysis["feedback_comment"] is None
+
+    def test_notification_create_and_list(self):
+        user_id = database.add_user("notifuser", "notif@test.com", "hash123")
+        database.create_notification(user_id, "analysis_success", "Done", "Resume analyzed", {"analysis_id": 1})
+        items = database.get_notifications(user_id, limit=10, offset=0)
+        assert len(items) == 1
+        assert items[0]["type"] == "analysis_success"
+        assert items[0]["payload"]["analysis_id"] == 1
+        assert items[0]["is_read"] is False
+
+    def test_notification_read_and_unread_count(self):
+        user_id = database.add_user("countuser", "count@test.com", "hash123")
+        n1 = database.create_notification(user_id, "a", "A", "A")
+        database.create_notification(user_id, "b", "B", "B")
+        assert database.get_unread_count(user_id) == 2
+        assert database.mark_notification_read(n1, user_id) is True
+        assert database.get_unread_count(user_id) == 1
+
+    def test_mark_all_notifications_read(self):
+        user_id = database.add_user("allread", "allread@test.com", "hash123")
+        database.create_notification(user_id, "a", "A", "A")
+        database.create_notification(user_id, "b", "B", "B")
+        updated = database.mark_all_notifications_read(user_id)
+        assert updated == 2
+        assert database.get_unread_count(user_id) == 0
+
+    def test_notification_user_scoping(self):
+        user1 = database.add_user("u1", "u1@test.com", "hash123")
+        user2 = database.add_user("u2", "u2@test.com", "hash123")
+        n1 = database.create_notification(user1, "a", "A", "A")
+        assert database.mark_notification_read(n1, user2) is False
+        assert len(database.get_notifications(user2, limit=10, offset=0)) == 0
+        assert database.get_unread_count(user1) == 1
+
+    def test_delete_expired_notifications(self):
+        user_id = database.add_user("exp", "exp@test.com", "hash123")
+        database.create_notification(user_id, "new", "New", "Keep")
+        with database.get_connection() as conn:
+            cursor = conn.cursor()
+            old_date = (datetime.now(timezone.utc) - timedelta(days=45)).isoformat()
+            cursor.execute(
+                """
+                INSERT INTO notifications (user_id, type, title, message, payload_json, is_read, created_at, read_at)
+                VALUES (?, ?, ?, ?, ?, 0, ?, NULL)
+                """,
+                (user_id, "old", "Old", "Delete", None, old_date)
+            )
+        deleted = database.delete_expired_notifications(days=30)
+        assert deleted == 1
+        items = database.get_notifications(user_id, limit=10, offset=0)
+        assert len(items) == 1
+        assert items[0]["type"] == "new"
 
 
 if __name__ == "__main__":

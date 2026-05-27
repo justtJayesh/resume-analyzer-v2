@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Project-scoped pre-commit hook.
+# Guardrail: SKIP_PRE_COMMIT_REVIEW=1 allows emergency bypass.
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+"$REPO_ROOT/scripts/run_post_edit_review.sh" pre-commit

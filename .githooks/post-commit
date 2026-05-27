@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Project-scoped post-commit hook for optional post-commit visibility.
+# Pre-commit is the primary gate to prevent buggy commits.
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+"$REPO_ROOT/scripts/run_post_edit_review.sh" post-commit

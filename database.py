@@ -3,7 +3,7 @@
 import sqlite3
 import os
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from contextlib import contextmanager
 
 # Database path - Flask instance folder
@@ -46,6 +46,25 @@ def init_db():
             job_description TEXT,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            type TEXT NOT NULL,
+            title TEXT NOT NULL,
+            message TEXT NOT NULL,
+            payload_json TEXT,
+            is_read INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL,
+            read_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_notifications_user_read_created
+        ON notifications (user_id, is_read, created_at DESC)
     """)
 
     # Add detailed_results column if it doesn't exist (for existing databases)
@@ -236,3 +255,96 @@ def update_feedback(analysis_id: int, user_id: int, rating: int, comment: str | 
             (rating, comment, analysis_id, user_id)
         )
         return cursor.rowcount > 0
+
+
+def create_notification(user_id: int, type: str, title: str, message: str, payload: dict | None = None) -> int:
+    """Create a notification for a user and return its id."""
+    payload_json = json.dumps(payload) if payload is not None else None
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO notifications (user_id, type, title, message, payload_json, is_read, created_at, read_at)
+            VALUES (?, ?, ?, ?, ?, 0, ?, NULL)
+            """,
+            (user_id, type, title, message, payload_json, datetime.now(timezone.utc).isoformat())
+        )
+        return cursor.lastrowid
+
+
+def get_notifications(user_id: int, limit: int = 20, offset: int = 0, unread_only: bool = False) -> list[dict]:
+    """Return notifications for a user ordered by most recent first."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        base_sql = """
+            SELECT * FROM notifications
+            WHERE user_id = ?
+        """
+        params = [user_id]
+        if unread_only:
+            base_sql += " AND is_read = 0"
+        base_sql += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+        cursor.execute(base_sql, tuple(params))
+        rows = cursor.fetchall()
+        result = []
+        for row in rows:
+            d = dict(row)
+            d["is_read"] = bool(d["is_read"])
+            d["payload"] = json.loads(d["payload_json"]) if d.get("payload_json") else None
+            result.append(d)
+        return result
+
+
+def get_unread_count(user_id: int) -> int:
+    """Return unread notification count for a user."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT COUNT(*) AS cnt FROM notifications WHERE user_id = ? AND is_read = 0",
+            (user_id,)
+        )
+        row = cursor.fetchone()
+        return int(row["cnt"]) if row else 0
+
+
+def mark_notification_read(notification_id: int, user_id: int) -> bool:
+    """Mark a single notification as read for a user."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE notifications
+            SET is_read = 1, read_at = COALESCE(read_at, ?)
+            WHERE id = ? AND user_id = ?
+            """,
+            (datetime.now(timezone.utc).isoformat(), notification_id, user_id)
+        )
+        return cursor.rowcount > 0
+
+
+def mark_all_notifications_read(user_id: int) -> int:
+    """Mark all unread notifications as read for a user. Returns number updated."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE notifications
+            SET is_read = 1, read_at = COALESCE(read_at, ?)
+            WHERE user_id = ? AND is_read = 0
+            """,
+            (datetime.now(timezone.utc).isoformat(), user_id)
+        )
+        return cursor.rowcount
+
+
+def delete_expired_notifications(days: int = 30) -> int:
+    """Delete notifications older than the retention window. Returns rows deleted."""
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM notifications WHERE created_at < ?",
+            (cutoff.isoformat(),)
+        )
+        return cursor.rowcount

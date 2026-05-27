@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Notifications - CVNest{% endblock %}
+{% block content %}
+<section style="max-width:900px;margin:0 auto;">
+    <h1 style="font-family:'Syne',sans-serif;font-size:1.8rem;margin-bottom:8px;">Notifications</h1>
+    <p style="color:#737373;margin-bottom:16px;">Unread: <strong id="unreadCount">{{ unread_count }}</strong></p>
+    <button id="markAllBtn" class="btn btn-secondary" type="button" style="margin-bottom:16px;">Mark all as read</button>
+    <div id="notificationsPageList">
+        {% for n in notifications %}
+        <article style="border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:14px;margin-bottom:10px;background:{% if not n.is_read %}rgba(13,148,136,0.06){% else %}#fff{% endif %};">
+            <div style="font-weight:700;">{{ n.title }}</div>
+            <div style="color:#737373;font-size:0.9rem;margin:4px 0;">{{ n.message }}</div>
+            <div style="display:flex;gap:12px;align-items:center;">
+                <small style="color:#8a8a8a;">{{ n.created_at }}</small>
+                {% if not n.is_read %}
+                <button class="notif-page-read btn btn-secondary" data-id="{{ n.id }}" type="button" style="padding:6px 10px;font-size:0.8rem;">Mark read</button>
+                {% endif %}
+            </div>
+        </article>
+        {% else %}
+        <p>No notifications yet.</p>
+        {% endfor %}
+    </div>
+</section>
+<script>
+    (function () {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        const unread = document.getElementById("unreadCount");
+        const markAllBtn = document.getElementById("markAllBtn");
+        const container = document.getElementById("notificationsPageList");
+
+        async function reload() {
+            const res = await fetch("/api/notifications?limit=50");
+            const data = await res.json();
+            if (!data.success) return;
+            unread.textContent = data.unread_count;
+            container.innerHTML = data.notifications.length ? "" : "<p>No notifications yet.</p>";
+            data.notifications.forEach((n) => {
+                const article = document.createElement("article");
+                article.style.cssText = "border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:14px;margin-bottom:10px;background:" + (n.is_read ? "#fff" : "rgba(13,148,136,0.06)") + ";";
+                article.innerHTML = `
+                    <div style="font-weight:700;">${n.title}</div>
+                    <div style="color:#737373;font-size:0.9rem;margin:4px 0;">${n.message}</div>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <small style="color:#8a8a8a;">${n.created_at}</small>
+                        ${n.is_read ? "" : `<button class="notif-page-read btn btn-secondary" data-id="${n.id}" type="button" style="padding:6px 10px;font-size:0.8rem;">Mark read</button>`}
+                    </div>
+                `;
+                container.appendChild(article);
+            });
+        }
+
+        container.addEventListener("click", async function (event) {
+            if (!event.target.classList.contains("notif-page-read")) return;
+            const id = event.target.getAttribute("data-id");
+            const res = await fetch(`/api/notifications/${id}/read`, {
+                method: "POST",
+                headers: {"X-CSRF-Token": csrfToken}
+            });
+            const data = await res.json();
+            if (data.success) reload();
+        });
+
+        markAllBtn.addEventListener("click", async function () {
+            const res = await fetch("/api/notifications/read-all", {
+                method: "POST",
+                headers: {"X-CSRF-Token": csrfToken}
+            });
+            const data = await res.json();
+            if (data.success) reload();
+        });
+    })();
+</script>
+{% endblock %}

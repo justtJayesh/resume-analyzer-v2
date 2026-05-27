@@ -34,7 +34,10 @@ def _get_csrf_token():
 
 @app.context_processor
 def inject_csrf_token():
-    return {"csrf_token": _get_csrf_token()}
+    unread = 0
+    if "user_id" in session:
+        unread = database.get_unread_count(session["user_id"])
+    return {"csrf_token": _get_csrf_token(), "nav_unread_notifications": unread}
 
 
 @app.before_request
@@ -165,8 +168,20 @@ def delete_analysis(analysis_id):
     """Delete a specific analysis."""
     success = database.delete_analysis(analysis_id, session["user_id"])
     if success:
+        database.create_notification(
+            session["user_id"],
+            "analysis_delete_success",
+            "Analysis deleted",
+            "An analysis was deleted successfully."
+        )
         flash("Analysis deleted.", "success")
     else:
+        database.create_notification(
+            session["user_id"],
+            "analysis_delete_failed",
+            "Delete failed",
+            "Could not delete analysis. It may not exist or may belong to another user."
+        )
         flash("Could not delete analysis.", "error")
     return redirect(url_for("analysis"))
 
@@ -187,13 +202,31 @@ def submit_feedback(analysis_id):
 
     analysis = database.get_analysis_by_id(analysis_id, session["user_id"])
     if not analysis:
+        database.create_notification(
+            session["user_id"],
+            "feedback_failed",
+            "Feedback failed",
+            "Feedback could not be submitted because the analysis was not found."
+        )
         return jsonify({"success": False, "error": "Analysis not found."}), 403
 
     try:
         database.update_feedback(analysis_id, session["user_id"], rating, comment)
     except ValueError as e:
+        database.create_notification(
+            session["user_id"],
+            "feedback_failed",
+            "Feedback failed",
+            str(e)
+        )
         return jsonify({"success": False, "error": str(e)}), 409
 
+    database.create_notification(
+        session["user_id"],
+        "feedback_success",
+        "Feedback submitted",
+        "Thank you for submitting your feedback."
+    )
     return jsonify({"success": True})
 
 
@@ -203,6 +236,7 @@ def home():
     """Home page - upload resume and view score/tips."""
     # Handle POST: file upload
     if request.method == "POST":
+        database.delete_expired_notifications(30)
         if "resume" not in request.files:
             flash("No file was selected.", "error")
             return redirect(url_for("home"))
@@ -238,6 +272,13 @@ def home():
             detailed_results,
             job_title if job_title else None,
             job_description if job_description else None
+        )
+        database.create_notification(
+            session["user_id"],
+            "analysis_success",
+            "Resume analyzed",
+            f"Your resume '{file.filename}' was analyzed successfully.",
+            payload={"analysis_id": analysis_id}
         )
 
         # Store only the ID in session (PRG pattern) — full data re-fetched from DB on GET
@@ -290,6 +331,55 @@ def analysis_detail(analysis_id):
         flash("Analysis not found.", "error")
         return redirect(url_for("analysis"))
     return render_template("analysis_detail.html", analysis=analysis)
+
+
+@app.route("/notifications")
+@login_required
+def notifications():
+    items = database.get_notifications(session["user_id"], limit=50, offset=0)
+    unread_count = database.get_unread_count(session["user_id"])
+    return render_template("notifications.html", notifications=items, unread_count=unread_count)
+
+
+@app.route("/api/notifications")
+@login_required
+def api_notifications():
+    try:
+        limit = int(request.args.get("limit", 8))
+        offset = int(request.args.get("offset", 0))
+    except ValueError:
+        return jsonify({"success": False, "error": "Invalid pagination parameters."}), 400
+
+    limit = max(1, min(limit, 100))
+    offset = max(0, offset)
+    items = database.get_notifications(session["user_id"], limit=limit, offset=offset)
+    return jsonify({
+        "success": True,
+        "notifications": items,
+        "unread_count": database.get_unread_count(session["user_id"])
+    })
+
+
+@app.route("/api/notifications/unread-count")
+@login_required
+def api_unread_count():
+    return jsonify({"success": True, "unread_count": database.get_unread_count(session["user_id"])})
+
+
+@app.route("/api/notifications/<int:notification_id>/read", methods=["POST"])
+@login_required
+def api_mark_notification_read(notification_id):
+    marked = database.mark_notification_read(notification_id, session["user_id"])
+    if not marked:
+        return jsonify({"success": False, "error": "Notification not found."}), 404
+    return jsonify({"success": True, "unread_count": database.get_unread_count(session["user_id"])})
+
+
+@app.route("/api/notifications/read-all", methods=["POST"])
+@login_required
+def api_mark_all_notifications_read():
+    updated = database.mark_all_notifications_read(session["user_id"])
+    return jsonify({"success": True, "updated": updated, "unread_count": 0})
 
 
 if __name__ == "__main__":

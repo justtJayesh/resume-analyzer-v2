@@ -100,6 +100,80 @@
             background: var(--surface-elevated);
             color: var(--primary);
         }
+        .notification-wrap {
+            position: relative;
+        }
+        .notification-bell {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text);
+        }
+        .notification-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background: var(--error);
+            color: #fff;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .notification-dropdown {
+            position: absolute;
+            right: 0;
+            top: 46px;
+            width: 360px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px var(--shadow-md);
+            padding: 10px;
+            display: none;
+            z-index: 100;
+        }
+        .notification-dropdown.open {
+            display: block;
+        }
+        .notif-item {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #fff;
+        }
+        .notif-item.unread {
+            background: rgba(13, 148, 136, 0.06);
+        }
+        .notif-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .notif-message {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .notif-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+        .notif-link {
+            font-size: 0.8rem;
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
 
         /* Main Container */
         .container {
@@ -210,6 +284,23 @@
                     <span class="nav-user">Hello, {{ session.username }}</span>
                     <a href="{{ url_for('home') }}" class="nav-link">Home</a>
                     <a href="{{ url_for('analysis') }}" class="nav-link">Analyses</a>
+                    <div class="notification-wrap">
+                        <button class="notification-bell" id="notificationBell" type="button" aria-label="Notifications">
+                            🔔
+                        </button>
+                        {% if nav_unread_notifications > 0 %}
+                            <span class="notification-badge" id="notificationBadge">{{ nav_unread_notifications }}</span>
+                        {% else %}
+                            <span class="notification-badge" id="notificationBadge" style="display:none;">0</span>
+                        {% endif %}
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div id="notificationList"></div>
+                            <div class="notif-actions">
+                                <a class="notif-link" href="{{ url_for('notifications') }}">View all</a>
+                                <button id="markAllReadBtn" class="notif-link" type="button" style="border:none;background:none;cursor:pointer;">Mark all read</button>
+                            </div>
+                        </div>
+                    </div>
                     <form method="POST" action="{{ url_for('logout') }}" style="display:inline;">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                         <button type="submit" class="nav-link" style="background:none;border:none;padding:0;cursor:pointer;">Logout</button>
@@ -234,5 +325,77 @@
             {% block content %}{% endblock %}
         </main>
     </div>
+    {% if session.get('user_id') %}
+    <script>
+        (function () {
+            const bell = document.getElementById("notificationBell");
+            const dropdown = document.getElementById("notificationDropdown");
+            const list = document.getElementById("notificationList");
+            const badge = document.getElementById("notificationBadge");
+            const markAll = document.getElementById("markAllReadBtn");
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+            async function refreshNotifications() {
+                const res = await fetch("/api/notifications?limit=8");
+                const data = await res.json();
+                if (!data.success) return;
+                badge.textContent = data.unread_count;
+                badge.style.display = data.unread_count > 0 ? "inline-flex" : "none";
+                list.innerHTML = "";
+                if (!data.notifications.length) {
+                    list.innerHTML = '<div class="notif-message" style="padding:8px;">No notifications yet.</div>';
+                    return;
+                }
+                data.notifications.forEach((n) => {
+                    const item = document.createElement("div");
+                    item.className = "notif-item " + (n.is_read ? "" : "unread");
+                    item.innerHTML = `
+                        <div class="notif-title">${n.title}</div>
+                        <div class="notif-message">${n.message}</div>
+                        <div class="notif-actions">
+                            <button class="notif-link mark-read-btn" data-id="${n.id}" type="button" style="border:none;background:none;cursor:pointer;">Mark read</button>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+
+            bell.addEventListener("click", function () {
+                dropdown.classList.toggle("open");
+                if (dropdown.classList.contains("open")) refreshNotifications();
+            });
+
+            document.addEventListener("click", function (event) {
+                if (!dropdown.contains(event.target) && !bell.contains(event.target)) {
+                    dropdown.classList.remove("open");
+                }
+            });
+
+            list.addEventListener("click", async function (event) {
+                if (!event.target.classList.contains("mark-read-btn")) return;
+                const id = event.target.getAttribute("data-id");
+                const res = await fetch(`/api/notifications/${id}/read`, {
+                    method: "POST",
+                    headers: {"X-CSRF-Token": csrfToken}
+                });
+                const data = await res.json();
+                if (data.success) refreshNotifications();
+            });
+
+            markAll.addEventListener("click", async function () {
+                const res = await fetch("/api/notifications/read-all", {
+                    method: "POST",
+                    headers: {"X-CSRF-Token": csrfToken}
+                });
+                const data = await res.json();
+                if (data.success) refreshNotifications();
+            });
+
+            setInterval(function () {
+                if (document.visibilityState === "visible") refreshNotifications();
+            }, 30000);
+        })();
+    </script>
+    {% endif %}
 </body>
 </html>
