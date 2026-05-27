@@ -108,6 +108,8 @@ IDEAL_BENCHMARKS = {
 }
 
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt"}
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+MAX_PDF_PAGES = 25
 
 
 def allowed_file(filename):
@@ -125,6 +127,9 @@ def extract_text_from_file(file_content, filename):
     filename: original filename for extension detection
     Returns: string of extracted text, or empty string on error.
     """
+    if not file_content or len(file_content) > MAX_UPLOAD_BYTES:
+        return ""
+
     ext = filename.rsplit(".", 1)[1].lower()
 
     if ext == "txt":
@@ -148,6 +153,8 @@ def extract_text_from_file(file_content, filename):
         try:
             import PyPDF2
             reader = PyPDF2.PdfReader(io.BytesIO(file_content))
+            if len(reader.pages) > MAX_PDF_PAGES:
+                return ""
             text_parts = []
             for page in reader.pages:
                 text_parts.append(page.extract_text() or "")

@@ -1,5 +1,6 @@
 import json
 import os
+import secrets
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -7,11 +8,45 @@ import database
 import analyzer
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
+secret_key = os.environ.get("SECRET_KEY")
+if not secret_key:
+    raise RuntimeError("SECRET_KEY environment variable is required.")
+app.secret_key = secret_key
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production"
 
 # Initialize database on startup
 with app.app_context():
     database.init_db()
+
+
+def _get_csrf_token():
+    token = session.get("csrf_token")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_token"] = token
+    return token
+
+
+@app.context_processor
+def inject_csrf_token():
+    return {"csrf_token": _get_csrf_token()}
+
+
+@app.before_request
+def validate_csrf():
+    if request.method != "POST":
+        return
+    if request.endpoint == "static":
+        return
+    sent_token = request.form.get("csrf_token") or request.headers.get("X-CSRF-Token")
+    if not sent_token or sent_token != session.get("csrf_token"):
+        if request.headers.get("Content-Type") == "application/json" or request.is_json:
+            return jsonify({"success": False, "error": "Invalid CSRF token."}), 403
+        flash("Invalid request token. Please try again.", "error")
+        return redirect(request.referrer or url_for("home"))
 
 
 def login_required(f):
@@ -112,7 +147,8 @@ def register():
     return redirect(url_for("login"))
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
+@login_required
 def logout():
     """Log out the user."""
     session.clear()
@@ -264,4 +300,4 @@ def analysis_detail(analysis_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=False, port=5001)
